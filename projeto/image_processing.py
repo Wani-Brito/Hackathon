@@ -1,10 +1,12 @@
 import cv2
 import numpy as np
+import easyocr
 
 
 class PIDImageProcessor:
     
     def __init__(self, image_path):
+        # Carrega a imagem com OpenCV
         self.original_image = cv2.imread(image_path)
         if self.original_image is None:
             raise ValueError(f"Não foi possível carregar a imagem: {image_path}")
@@ -14,6 +16,10 @@ class PIDImageProcessor:
         self.threshold_image = None
         self.contours = None
         self.image_with_boxes = None
+        self.detected_tags = []
+        
+        # Força o uso exclusivo da CPU (evita travamentos de GPU/CUDA)
+        self.reader = easyocr.Reader(['en'], gpu=False, verbose=False)
     
     def convert_to_grayscale(self):
         self.gray_image = cv2.cvtColor(self.original_image, cv2.COLOR_BGR2GRAY)
@@ -61,6 +67,7 @@ class PIDImageProcessor:
             self.detect_contours()
         
         self.image_with_boxes = self.original_image.copy()
+        self.detected_tags = []
         
         box_count = 0
         for contour in self.contours:
@@ -70,7 +77,22 @@ class PIDImageProcessor:
                 continue
 
             x, y, w, h = cv2.boundingRect(contour)
-        
+            
+            # Recorta a Região de Interesse (ROI)
+            roi = self.original_image[y:y+h, x:x+w]
+            
+            # Leitura com o OCR
+            if roi.size > 0:
+                try:
+                    results = self.reader.readtext(roi)
+                    for (_, text, prob) in results:
+                        if prob > 0.3:
+                            clean_text = text.strip().upper()
+                            if clean_text and clean_text not in self.detected_tags:
+                                self.detected_tags.append(clean_text)
+                except Exception:
+                    pass
+
             cv2.rectangle(self.image_with_boxes, (x, y), (x + w, y + h), 
                          (0, 255, 0), 2)
             
@@ -80,27 +102,14 @@ class PIDImageProcessor:
             
             box_count += 1
         
-        print(f"Total de objetos detectados: {box_count}")
         return self.image_with_boxes
     
     def process_pipeline(self, threshold_method='otsu', min_area=500):
-        print("Iniciando pipeline de processamento...")
-        print("1. Convertendo para escala de cinza...")
         self.convert_to_grayscale()
-        
-        print("2. Aplicando desfoque...")
         self.apply_blur()
-        
-        print("3. Aplicando limiarização...")
         self.apply_threshold(method=threshold_method)
-        
-        print("4. Detectando contornos...")
         self.detect_contours()
-        
-        print("5. Desenhando bounding boxes...")
         self.draw_bounding_boxes(min_area=min_area)
-        
-        print("Pipeline concluído!")
         return self.original_image, self.image_with_boxes
     
     def get_processed_images(self):

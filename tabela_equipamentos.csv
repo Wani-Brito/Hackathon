@@ -1,0 +1,11 @@
+﻿TAG,TIPO,CLASSE
+FV210,Válvula,Instrumento
+M210,Motor,Equipamento
+LT210,Sensor Nível,Instrumento
+LSH210,Sensor Nível,Instrumento
+LSL210,Sensor Nível,Instrumento
+FO,Fail Open,Falha de Válvula
+FC,Fail Close,Falha de Válvula
+FL,Fail Locked,Falha de Válvula
+FL/DO,Fail Last/Drift Open,Falha de Válvula
+FL/DC,Fail Last/Drift Close,Falha de Válvula
