@@ -1,10 +1,40 @@
+# Ambientes virtuais
 .venv/
 .venv
 /.venv/**
 .venv-1/
 venv/
+env/
+
+# Caches e temporários Python
 __pycache__/
 *.py[cod]
+*$py.class
+*.so
+
+# Dependências e builds Frontend
 node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Artefatos gerados pela API e testes
+projeto/results_api/
+projeto/reports_api/
+projeto/temp/
 resultados/
-projeto/results_*.jpg
+
+# Pastas secundárias e testes temporários
+Hackathon-main/
+teste_codex.txt
+test_sprint1.py
+*.tmp
+*.log
+
+# Arquivos de sistema e IDE
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
+

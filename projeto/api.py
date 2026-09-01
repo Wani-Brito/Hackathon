@@ -27,6 +27,37 @@ os.makedirs(TEMP_DIR, exist_ok=True)
 os.makedirs(RESULTS_DIR, exist_ok=True)
 os.makedirs(REPORTS_DIR, exist_ok=True)
 
+
+def limpar_arquivos_antigos(diretorios, max_idade_segundos=3600, max_arquivos=30):
+    """Remove com seguranca arquivos antigos dos diretorios de saida/temporarios."""
+    agora = time.time()
+    for diretorio in diretorios:
+        if not os.path.exists(diretorio):
+            continue
+        try:
+            arquivos = []
+            for nome in os.listdir(diretorio):
+                caminho = os.path.join(diretorio, nome)
+                if os.path.isfile(caminho):
+                    arquivos.append((caminho, os.path.getmtime(caminho)))
+            
+            arquivos.sort(key=lambda x: x[1])
+            total = len(arquivos)
+            for caminho, mtime in arquivos:
+                idade = agora - mtime
+                if idade > max_idade_segundos or total > max_arquivos:
+                    try:
+                        os.remove(caminho)
+                        total -= 1
+                    except Exception:
+                        pass
+        except Exception:
+            pass
+
+
+# Limpeza automatica no startup
+limpar_arquivos_antigos([RESULTS_DIR, REPORTS_DIR, TEMP_DIR])
+
 # Resultados ficam disponíveis enquanto o servidor estiver em execução para
 # que o relatório seja gerado sem reprocessar a imagem enviada pelo usuário.
 REPORTS = {}
@@ -218,6 +249,12 @@ async def process_image(file: UploadFile = File(...)):
         
         # Prepara resposta
         report_id = str(uuid.uuid4())
+        
+        # Limita historico em memoria a 50 entradas mais recentes
+        if len(REPORTS) >= 50:
+            primeira_chave = next(iter(REPORTS))
+            del REPORTS[primeira_chave]
+
         REPORTS[report_id] = {
             "original_filename": file.filename,
             "processed_image_path": result_path,
@@ -227,6 +264,9 @@ async def process_image(file: UploadFile = File(...)):
                 "processing_time_seconds": round(elapsed_time, 2),
             },
         }
+
+        # Executa limpeza preventiva
+        limpar_arquivos_antigos([RESULTS_DIR, REPORTS_DIR, TEMP_DIR])
 
         response = {
             "success": True,
