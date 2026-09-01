@@ -38,6 +38,18 @@ function App() {
     }
   };
 
+  const uniqueDetections = result?.detections
+    ? Object.values(
+        result.detections.reduce((acc, item) => {
+          const key = item.tag;
+          if (!acc[key] || item.confidence > acc[key].confidence) {
+            acc[key] = item;
+          }
+          return acc;
+        }, {})
+      )
+    : [];
+
   return (
     <div className="p-8 max-w-4xl mx-auto font-sans text-gray-900">
       <header className="mb-10 text-center">
@@ -71,8 +83,8 @@ function App() {
           <img src={`${API_URL}${result.processed_image_url}`} alt="Processada" className="mb-8 rounded-lg shadow-xl w-full" />
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-            {result.detections.length > 0 ? result.detections.map((d, i) => (
-              <div key={i} className="border border-gray-200 p-4 rounded-xl bg-white shadow-sm">
+            {uniqueDetections.length > 0 ? uniqueDetections.map((d) => (
+              <div key={d.tag} className="border border-gray-200 p-4 rounded-xl bg-white shadow-sm">
                 <p className="font-bold text-lg mb-1">{d.tag} <span className={`text-xs px-2 py-0.5 rounded-full ${d.status === 'Identificado' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>{d.status}</span></p>
                 <p className="text-sm text-gray-600">Tipo: {d.tipo} | Classe: {d.classe}</p>
                 <p className="text-sm text-gray-600">Confiança: {(d.confidence * 100).toFixed(0)}%</p>
