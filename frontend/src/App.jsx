@@ -1,24 +1,63 @@
 import { useState } from 'react';
 import axios from 'axios';
-import { Upload, Loader2, RefreshCcw } from 'lucide-react';
+import {
+  CheckCircle2,
+  Download,
+  FileImage,
+  LoaderCircle,
+  RefreshCcw,
+  ScanLine,
+  ShieldCheck,
+  UploadCloud,
+} from 'lucide-react';
 
-const API_URL = "http://localhost:8000";
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 function App() {
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState(null);
 
-  const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
-    if (selectedFile) {
-      setFile(selectedFile);
-      setPreview(URL.createObjectURL(selectedFile));
-      setResult(null);
-      setError(null);
+  const validateAndSetFile = (selectedFile) => {
+    if (!selectedFile) return;
+    const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+    if (!validTypes.includes(selectedFile.type)) {
+      setError('Formato de arquivo inválido. Use arquivos JPG ou PNG.');
+      return;
     }
+    setFile(selectedFile);
+    setPreview(URL.createObjectURL(selectedFile));
+    setResult(null);
+    setError(null);
+  };
+
+  const handleFileChange = (event) => {
+    const selectedFile = event.target.files?.[0];
+    if (selectedFile) {
+      validateAndSetFile(selectedFile);
+    }
+  };
+
+  const handleDrop = (event) => {
+    event.preventDefault();
+    const droppedFile = event.dataTransfer.files?.[0];
+    if (droppedFile) {
+      validateAndSetFile(droppedFile);
+    }
+  };
+
+  const handleDragOver = (event) => {
+    event.preventDefault();
+  };
+
+  const resetAnalysis = () => {
+    setFile(null);
+    setPreview(null);
+    setResult(null);
+    setError(null);
   };
 
   const processImage = async () => {
@@ -27,14 +66,36 @@ function App() {
     setError(null);
     const formData = new FormData();
     formData.append('file', file);
-
     try {
       const response = await axios.post(`${API_URL}/process-image`, formData);
       setResult(response.data);
-    } catch (err) {
-      setError("Erro ao processar imagem. Verifique se o backend está rodando.");
+    } catch {
+      setError('Não foi possível processar a planta. Confirme se o backend está em execução.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const downloadReport = async () => {
+    if (!result?.report_id) return;
+    setDownloading(true);
+    setError(null);
+    try {
+      const response = await axios.get(`${API_URL}/download-report/${result.report_id}`, {
+        responseType: 'blob',
+      });
+      const url = URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'relatorio_tagvision_pid.pdf';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      setError('Não foi possível gerar o PDF. Tente novamente em alguns instantes.');
+    } finally {
+      setDownloading(false);
     }
   };
 
@@ -51,55 +112,150 @@ function App() {
     : [];
 
   return (
-    <div className="p-8 max-w-4xl mx-auto font-sans text-gray-900">
-      <header className="mb-10 text-center">
-        <h1 className="text-4xl font-bold mb-2">TAGVision P&ID</h1>
-        <p className="text-gray-500">Análise inteligente de plantas técnicas</p>
+    <main className="app-shell">
+      <div className="tech-grid" aria-hidden="true" />
+      <header className="topbar">
+        <a className="brand" href="#inicio" aria-label="IASTECH">
+          <img src="/iastech-logo.png" alt="IASTECH Industrial Automation" />
+        </a>
+        <nav className="nav-links" aria-label="Navegação principal">
+          <a href="#inicio">Início</a>
+          <a href="#analise">Análise P&amp;ID</a>
+        </nav>
       </header>
 
-      {!result && !loading && (
-        <div className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center bg-gray-50">
-          <Upload className="mx-auto mb-4 text-purple-600" size={48} />
-          <input type="file" onChange={handleFileChange} className="mb-4 block mx-auto" />
-          {preview && <img src={preview} alt="Preview" className="max-h-64 mx-auto mb-4 rounded shadow" />}
-          <button onClick={processImage} disabled={!file} className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 disabled:opacity-50 transition">
-            Processar Planta
-          </button>
+      <section className="hero" id="inicio">
+        <div className="hero-copy">
+          <p className="eyebrow"><span /> Inteligência industrial</p>
+          <h1>Precisão visual para <em>plantas industriais.</em></h1>
+          <p className="hero-description">Utilize visão computacional para identificar TAGs e organizar informações essenciais dos seus diagramas P&amp;ID.</p>
+          <div className="hero-points">
+            <span><CheckCircle2 size={17} /> Leitura de TAGs</span>
+            <span><CheckCircle2 size={17} /> Processamento seguro</span>
+          </div>
         </div>
-      )}
-
-      {loading && (
-        <div className="text-center py-20">
-          <Loader2 className="animate-spin mx-auto mb-4 text-purple-600" size={48} />
-          <p className="text-lg text-gray-600">Analisando planta...</p>
+        <div className="hero-visual" aria-hidden="true">
+          <div className="radar-ring ring-one" /><div className="radar-ring ring-two" />
+          <div className="radar-core"><ScanLine size={42} /></div>
+          <div className="floating-label label-top">OCR ATIVO</div>
+          <div className="floating-label label-bottom">P&amp;ID SCAN</div>
         </div>
-      )}
+      </section>
 
-      {error && <div className="text-red-500 text-center p-4 bg-red-50 rounded-lg">{error}</div>}
+      <section className="analysis-section" id="analise">
+        <div className="section-heading">
+          <p className="eyebrow"><span /> Plataforma TAGVision</p>
+          <h2>Analise sua planta</h2>
+          <p>Envie um diagrama e receba a identificação das TAGs encontradas.</p>
+        </div>
 
-      {result && (
-        <div>
-          <h2 className="text-2xl font-semibold mb-6">Resultados da Análise</h2>
-          <img src={`${API_URL}${result.processed_image_url}`} alt="Processada" className="mb-8 rounded-lg shadow-xl w-full" />
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-            {uniqueDetections.length > 0 ? uniqueDetections.map((d) => (
-              <div key={d.tag} className="border border-gray-200 p-4 rounded-xl bg-white shadow-sm">
-                <p className="font-bold text-lg mb-1">{d.tag} <span className={`text-xs px-2 py-0.5 rounded-full ${d.status === 'Identificado' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>{d.status}</span></p>
-                <p className="text-sm text-gray-600">Tipo: {d.tipo} | Classe: {d.classe}</p>
-                <p className="text-sm text-gray-600">Confiança: {(d.confidence * 100).toFixed(0)}%</p>
+        {!result && !loading && (
+          <div className="upload-panel">
+            <div className="upload-copy">
+              <div className="step-number">01</div><h3>Enviar diagrama P&amp;ID</h3>
+              <p>Formatos aceitos: JPG e PNG. Selecione o arquivo da planta que deseja analisar.</p>
+              <div className="upload-note"><ShieldCheck size={18} /> Seu arquivo é utilizado somente durante a análise.</div>
+            </div>
+            <div
+              className={`drop-zone ${preview ? 'has-preview' : ''}`}
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+            >
+              {preview ? (
+                <>
+                  <img src={preview} alt="Prévia da planta selecionada" />
+                  <div className="preview-footer">
+                    <FileImage size={17} />
+                    <span>{file?.name}</span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="upload-icon"><UploadCloud size={29} /></div>
+                  <strong>Selecione o arquivo da planta</strong>
+                  <span>ou arraste-o para esta área</span>
+                </>
+              )}
+              <input id="plant-file" type="file" accept="image/jpeg,image/png,image/jpg" onChange={handleFileChange} />
+              <label htmlFor="plant-file" className="secondary-button">{preview ? 'Trocar arquivo' : 'Selecionar arquivo'}</label>
+            </div>
+            <button type="button" className="primary-button process-button" onClick={processImage} disabled={!file}>Processar planta <ScanLine size={19} /></button>
+          </div>
+        )}
+
+        {loading && (
+          <div className="status-panel">
+            <LoaderCircle className="loader" size={42} />
+            <p className="eyebrow"><span /> Processamento em andamento</p>
+            <h3>Analisando sua planta industrial</h3>
+            <p>Identificando regiões e TAGs técnicas. Isso pode levar alguns instantes.</p>
+          </div>
+        )}
+        
+        {error && <div className="error-message">{error}</div>}
+
+        {result && (
+          <div className="results-panel">
+            <div className="results-header">
+              <div>
+                <p className="eyebrow"><span /> Análise concluída</p>
+                <h2>Resultados da planta</h2>
               </div>
-            )) : <p className="text-gray-500 italic">Nenhum equipamento cadastrado foi identificado.</p>}
-          </div>
+              <div className="result-actions">
+                <button type="button" className="primary-button download-button" onClick={downloadReport} disabled={downloading}>
+                  {downloading ? 'Gerando PDF...' : 'Baixar relatório PDF'} <Download size={17} />
+                </button>
+                <button type="button" className="secondary-button reset-button" onClick={resetAnalysis}>
+                  <RefreshCcw size={17} /> Nova análise
+                </button>
+              </div>
+            </div>
+            
+            <div className="result-image-wrap">
+              <img src={`${API_URL}${result.processed_image_url}`} alt="Planta processada com as regiões identificadas" />
+            </div>
 
-          <div className="flex justify-center">
-            <button onClick={() => {setResult(null); setFile(null); setPreview(null);}} className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 px-6 py-2 rounded-lg transition">
-              <RefreshCcw size={16} /> Nova análise
-            </button>
+            <div className="detection-summary">
+              <div>
+                <strong>{uniqueDetections.length}</strong>
+                <span>TAGs identificadas</span>
+              </div>
+              <div>
+                <strong>{result.stats?.regions_sent_to_ocr ?? 0}</strong>
+                <span>Regiões analisadas</span>
+              </div>
+              <div>
+                <strong>{result.stats?.processing_time_seconds ?? 0}s</strong>
+                <span>Tempo de processamento</span>
+              </div>
+            </div>
+
+            <div className="detection-grid">
+              {uniqueDetections.length > 0 ? (
+                uniqueDetections.map((detection) => (
+                  <article className="detection-card" key={detection.tag}>
+                    <div className="tag-name">
+                      {detection.tag}
+                      <span className={detection.status === 'Identificado' ? 'identified' : 'possible'}>
+                        {detection.status}
+                      </span>
+                    </div>
+                    <p>{detection.tipo} <i /> {detection.classe}</p>
+                    <small>Confiança: {(detection.confidence * 100).toFixed(0)}%</small>
+                  </article>
+                ))
+              ) : (
+                <p className="empty-state">Nenhum equipamento cadastrado foi identificado nesta imagem.</p>
+              )}
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </section>
+      <footer id="sobre">
+        <img src="/iastech-logo.png" alt="IASTECH" />
+        <span>TAGVision P&amp;ID · Soluções em automação industrial</span>
+      </footer>
+    </main>
   );
 }
 
