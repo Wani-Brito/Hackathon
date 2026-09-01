@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Search, CheckCircle, AlertCircle } from 'lucide-react';
+import { Search, CheckCircle2, AlertTriangle, X } from 'lucide-react';
 import { formatConfidence } from '../utils/formatters';
 
 export default function DetectionList({ detections = [] }) {
@@ -8,9 +8,9 @@ export default function DetectionList({ detections = [] }) {
 
   const filteredDetections = useMemo(() => {
     return detections.filter((item) => {
-      const term = searchTerm.toLowerCase();
+      const term = searchTerm.trim().toLowerCase();
       const matchesSearch =
-        !searchTerm ||
+        !term ||
         (item.tag && item.tag.toLowerCase().includes(term)) ||
         (item.tipo && item.tipo.toLowerCase().includes(term)) ||
         (item.classe && item.classe.toLowerCase().includes(term));
@@ -32,30 +32,32 @@ export default function DetectionList({ detections = [] }) {
   );
 
   return (
-    <div className="detection-list-card">
+    <div className="detection-list-card" role="region" aria-label="Tabela de TAGs identificadas">
       <div className="detection-list-header">
-        <div className="search-box">
-          <Search size={15} className="search-icon" />
+        <div className="search-bar-wrap">
+          <Search size={15} className="search-icon" aria-hidden="true" />
           <input
             type="text"
-            placeholder="Buscar por TAG, Tipo ou Classe..."
+            placeholder="Filtrar por TAG, tipo ou classe..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="search-input"
+            aria-label="Filtrar TAGs por texto"
           />
           {searchTerm && (
             <button
               type="button"
               onClick={() => setSearchTerm('')}
-              className="clear-search"
+              className="clear-search-btn"
+              title="Limpar busca"
               aria-label="Limpar busca"
             >
-              ×
+              <X size={13} aria-hidden="true" />
             </button>
           )}
         </div>
 
-        <div className="filter-group">
+        <div className="filter-pills-row" role="group" aria-label="Filtros por status">
           <button
             type="button"
             className={`filter-pill ${statusFilter === 'ALL' ? 'active' : ''}`}
@@ -72,7 +74,7 @@ export default function DetectionList({ detections = [] }) {
           </button>
           <button
             type="button"
-            className={`filter-pill ${statusFilter === 'Possível TAG' ? 'active' : ''}`}
+            className={`filter-pill ${statusFilter === 'Possível TAG' || statusFilter === 'Possivel TAG' ? 'active' : ''}`}
             onClick={() => setStatusFilter(statusFilter === 'Possível TAG' ? 'ALL' : 'Possível TAG')}
           >
             Possíveis ({possibleCount})
@@ -80,54 +82,128 @@ export default function DetectionList({ detections = [] }) {
         </div>
       </div>
 
-      <div className="table-responsive">
+      {/* Desktop Table View */}
+      <div className="table-responsive desktop-only" tabIndex={0} role="region" aria-label="Lista de TAGs">
         <table className="detection-table">
           <thead>
             <tr>
-              <th>TAG</th>
-              <th>Status</th>
-              <th>Tipo</th>
-              <th>Classe</th>
-              <th className="text-right">Confiança</th>
+              <th scope="col">TAG</th>
+              <th scope="col">Status</th>
+              <th scope="col">Tipo</th>
+              <th scope="col">Classe</th>
+              <th scope="col" className="text-right">Confiança</th>
             </tr>
           </thead>
           <tbody>
             {filteredDetections.length > 0 ? (
-              filteredDetections.map((d) => (
-                <tr key={d.tag}>
-                  <td className="tag-cell">{d.tag}</td>
-                  <td>
-                    <span className={`status-badge ${d.status === 'Identificado' ? 'identified' : 'possible'}`}>
-                      {d.status === 'Identificado' ? <CheckCircle size={11} /> : <AlertCircle size={11} />}
-                      {d.status}
-                    </span>
-                  </td>
-                  <td>{d.tipo}</td>
-                  <td>{d.classe}</td>
-                  <td className="text-right">
-                    <div className="confidence-cell">
-                      <span>{formatConfidence(d.confidence)}</span>
-                      <div className="confidence-bar-bg">
-                        <div
-                          className="confidence-bar-fill"
-                          style={{ width: `${Math.min(100, Math.max(0, d.confidence * 100))}%` }}
-                        />
+              filteredDetections.map((d, index) => {
+                const isIdentified = d.status === 'Identificado';
+                const confPercent = Math.min(100, Math.max(0, (d.confidence || 0) * 100));
+
+                return (
+                  <tr
+                    key={d.tag}
+                    className="table-row-animate"
+                    style={{ animationDelay: `${Math.min(index * 35, 300)}ms` }}
+                  >
+                    <td className="tag-cell font-mono">{d.tag}</td>
+                    <td>
+                      <span className={`status-badge ${isIdentified ? 'identified' : 'possible'}`}>
+                        {isIdentified ? (
+                          <CheckCircle2 size={11} aria-hidden="true" />
+                        ) : (
+                          <AlertTriangle size={11} aria-hidden="true" />
+                        )}
+                        <span>{d.status}</span>
+                      </span>
+                    </td>
+                    <td>{d.tipo}</td>
+                    <td>{d.classe}</td>
+                    <td className="text-right">
+                      <div className="confidence-cell">
+                        <span className="confidence-value font-mono">{formatConfidence(d.confidence)}</span>
+                        <div className="confidence-bar-bg" aria-hidden="true">
+                          <div
+                            className={`confidence-bar-fill ${confPercent >= 75 ? 'high' : 'medium'}`}
+                            style={{ width: `${confPercent}%` }}
+                          />
+                        </div>
                       </div>
-                    </div>
-                  </td>
-                </tr>
-              ))
+                    </td>
+                  </tr>
+                );
+              })
             ) : (
               <tr>
                 <td colSpan="5" className="empty-table-cell">
                   {detections.length === 0
                     ? 'Nenhum equipamento cadastrado foi identificado nesta imagem.'
-                    : 'Nenhuma TAG corresponde aos critérios de busca ou filtro.'}
+                    : 'Nenhuma TAG corresponde aos critérios do filtro ou busca.'}
                 </td>
               </tr>
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile Cards View (<= 640px) */}
+      <div className="mobile-cards-list mobile-only" role="region" aria-label="Lista de TAGs em cartões">
+        {filteredDetections.length > 0 ? (
+          filteredDetections.map((d, index) => {
+            const isIdentified = d.status === 'Identificado';
+            const confPercent = Math.min(100, Math.max(0, (d.confidence || 0) * 100));
+
+            return (
+              <article
+                key={d.tag}
+                className="mobile-tag-card"
+                style={{ animationDelay: `${Math.min(index * 35, 300)}ms` }}
+              >
+                <div className="mobile-card-top">
+                  <span className="mobile-card-tag font-mono">{d.tag}</span>
+                  <span className={`status-badge ${isIdentified ? 'identified' : 'possible'}`}>
+                    {isIdentified ? (
+                      <CheckCircle2 size={10} aria-hidden="true" />
+                    ) : (
+                      <AlertTriangle size={10} aria-hidden="true" />
+                    )}
+                    <span>{d.status}</span>
+                  </span>
+                </div>
+
+                <div className="mobile-card-details">
+                  <div className="mobile-detail-row">
+                    <span className="detail-label">Tipo:</span>
+                    <span className="detail-val">{d.tipo}</span>
+                  </div>
+                  <div className="mobile-detail-row">
+                    <span className="detail-label">Classe:</span>
+                    <span className="detail-val">{d.classe}</span>
+                  </div>
+                </div>
+
+                <div className="mobile-card-footer">
+                  <span className="mobile-conf-label">Confiança:</span>
+                  <div className="confidence-cell">
+                    <span className="confidence-value font-mono">{formatConfidence(d.confidence)}</span>
+                    <div className="confidence-bar-bg" aria-hidden="true">
+                      <div
+                        className={`confidence-bar-fill ${confPercent >= 75 ? 'high' : 'medium'}`}
+                        style={{ width: `${confPercent}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </article>
+            );
+          })
+        ) : (
+          <div className="empty-table-cell">
+            {detections.length === 0
+              ? 'Nenhum equipamento cadastrado foi identificado nesta imagem.'
+              : 'Nenhuma TAG corresponde aos critérios do filtro ou busca.'}
+          </div>
+        )}
       </div>
     </div>
   );

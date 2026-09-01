@@ -1,4 +1,4 @@
-import { Download, RefreshCcw } from 'lucide-react';
+import { Download, RefreshCcw, CheckCircle, FileText } from 'lucide-react';
 import MetricsBar from './MetricsBar';
 import ResultImage from './ResultImage';
 import DetectionList from './DetectionList';
@@ -14,27 +14,38 @@ export default function ResultsDashboard({
   const imageUrl = apiService.getImageUrl(result.processed_image_url);
 
   return (
-    <div className="results-panel">
+    <div className="results-panel animate-fade-in-up" role="region" aria-label="Painel de Resultados da Análise">
       <div className="results-header">
-        <div>
-          <p className="eyebrow"><span /> Análise concluída</p>
-          <h2>Resultados da planta</h2>
+        <div className="results-title-group">
+          <div className="results-status-badge">
+            <CheckCircle size={14} aria-hidden="true" />
+            <span>ANÁLISE CONCLUÍDA</span>
+          </div>
+          <h2>Resultados da Planta Técnica</h2>
+          <p className="results-subtitle">
+            Arquivo analisado: <strong className="file-highlight">{result.original_image}</strong>
+          </p>
         </div>
+
         <div className="result-actions">
           <button
             type="button"
-            className="secondary-button reset-button"
+            className="primary-button new-analysis-btn"
             onClick={onReset}
           >
-            <RefreshCcw size={16} /> Nova análise
+            <RefreshCcw size={15} aria-hidden="true" />
+            <span>Nova Análise</span>
           </button>
+
           <button
             type="button"
-            className="primary-button download-button"
+            className="secondary-button download-pdf-btn"
             onClick={onDownloadReport}
             disabled={downloading}
           >
-            {downloading ? 'Gerando PDF...' : 'Baixar relatório PDF'} <Download size={16} />
+            <FileText size={15} aria-hidden="true" />
+            <span>{downloading ? 'Gerando Relatório...' : 'Baixar Relatório PDF'}</span>
+            <Download size={14} className="download-icon" aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -46,7 +57,7 @@ export default function ResultsDashboard({
       />
 
       <div className="results-content-layout">
-        <ResultImage imageUrl={imageUrl} alt={result.original_image || 'Planta P&ID'} />
+        <ResultImage imageUrl={imageUrl} alt={`Planta P&ID ${result.original_image}`} />
         <DetectionList detections={uniqueDetections} />
       </div>
     </div>

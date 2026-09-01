@@ -1,5 +1,5 @@
 /**
- * Deduplica deteccoes por TAG preservando aquela com maior indice de confianca.
+ * Deduplica detecções por TAG preservando aquela com maior índice de confiança.
  */
 export function getUniqueDetections(detections = []) {
   if (!Array.isArray(detections) || detections.length === 0) {
@@ -19,11 +19,21 @@ export function getUniqueDetections(detections = []) {
 }
 
 /**
- * Formata um valor de confianca (0-1) em porcentagem.
+ * Formata um valor de confiança (0-1) em porcentagem.
  */
 export function formatConfidence(confidence) {
   if (typeof confidence !== 'number' || Number.isNaN(confidence)) return '0%';
   return `${(confidence * 100).toFixed(0)}%`;
+}
+
+/**
+ * Formata tamanho de arquivo em KB ou MB.
+ */
+export function formatFileSize(bytes) {
+  if (!bytes || typeof bytes !== 'number') return '';
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
 }
 
 /**

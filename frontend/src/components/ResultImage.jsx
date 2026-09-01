@@ -1,26 +1,30 @@
 import { useState } from 'react';
-import { Maximize2, Minimize2 } from 'lucide-react';
+import { Maximize2, Minimize2, Image as ImageIcon } from 'lucide-react';
 
-export default function ResultImage({ imageUrl, alt = 'Planta processada' }) {
+export default function ResultImage({ imageUrl, alt = 'Planta industrial processada' }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <div className={`result-image-container ${isExpanded ? 'is-expanded' : ''}`}>
+    <div className={`result-image-container ${isExpanded ? 'is-expanded' : ''}`} role="region" aria-label="Visualizador da Planta">
       <div className="image-toolbar">
-        <span className="image-label">Planta Anotada</span>
+        <div className="image-toolbar-left">
+          <ImageIcon size={14} aria-hidden="true" />
+          <span className="image-label">Diagrama com Anotações Técnicas</span>
+        </div>
         <button
           type="button"
           className="image-action-btn"
           onClick={() => setIsExpanded(!isExpanded)}
-          title={isExpanded ? 'Visualização padrão' : 'Expandir imagem'}
+          title={isExpanded ? 'Restaurar tamanho padrão' : 'Expandir diagrama para melhor legibilidade'}
+          aria-expanded={isExpanded}
         >
           {isExpanded ? (
             <>
-              <Minimize2 size={14} /> <span>Reduzir</span>
+              <Minimize2 size={13} aria-hidden="true" /> <span>Reduzir</span>
             </>
           ) : (
             <>
-              <Maximize2 size={14} /> <span>Expandir</span>
+              <Maximize2 size={13} aria-hidden="true" /> <span>Expandir Imagem</span>
             </>
           )}
         </button>
@@ -34,6 +38,9 @@ export default function ResultImage({ imageUrl, alt = 'Planta processada' }) {
           onClick={() => setIsExpanded(!isExpanded)}
           title="Clique para alternar tamanho"
         />
+      </div>
+      <div className="image-footer-note">
+        <span>Legenda: caixas coloridas demarcam regiões de texto e símbolos identificados pelo OCR.</span>
       </div>
     </div>
   );

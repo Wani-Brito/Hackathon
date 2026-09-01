@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import UploadArea from './components/UploadArea';
@@ -19,7 +19,7 @@ function App() {
     if (!selectedFile) return;
 
     if (!isValidImageFile(selectedFile)) {
-      setError('Formato de arquivo inválido. Por favor, envie uma imagem nos formatos JPG ou PNG.');
+      setError('Formato de arquivo não suportado. Por favor, utilize uma imagem JPG ou PNG.');
       return;
     }
 
@@ -37,6 +37,12 @@ function App() {
     setPreview(null);
     setResult(null);
     setError(null);
+
+    // Scroll suave para a area de upload
+    const target = document.getElementById('analise');
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   const handleProcessImage = async () => {
@@ -49,10 +55,10 @@ function App() {
       if (data?.success) {
         setResult(data);
       } else {
-        setError(data?.detail || 'Erro ao processar imagem.');
+        setError(data?.detail || 'Erro ao processar diagrama.');
       }
     } catch {
-      setError('Não foi possível processar a planta. Confirme se o backend está em execução.');
+      setError('Falha na comunicação com o backend. Verifique se a API está em execução (porta 8000).');
     } finally {
       setLoading(false);
     }
@@ -74,7 +80,7 @@ function App() {
       link.remove();
       URL.revokeObjectURL(url);
     } catch {
-      setError('Não foi possível gerar o PDF. Tente novamente em alguns instantes.');
+      setError('Não foi possível gerar o relatório PDF. Tente novamente em instantes.');
     } finally {
       setDownloading(false);
     }
@@ -84,17 +90,32 @@ function App() {
     return getUniqueDetections(result?.detections);
   }, [result?.detections]);
 
+  // Scroll suave para os resultados ao concluir analise
+  useEffect(() => {
+    if (result) {
+      const target = document.getElementById('analise');
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  }, [result]);
+
   return (
-    <main className="app-shell">
+    <div className="app-shell">
       <div className="tech-grid" aria-hidden="true" />
       <Header />
       <Hero />
 
-      <section className="analysis-section" id="analise">
+      <main className="analysis-section" id="analise" tabIndex={-1}>
         <div className="section-heading">
-          <p className="eyebrow"><span /> Plataforma TAGVision</p>
-          <h2>Analise sua planta</h2>
-          <p>Envie um diagrama industrial P&amp;ID e receba a identificação estruturada das TAGs.</p>
+          <div className="eyebrow">
+            <span className="eyebrow-line" />
+            <span>Módulo de Extração</span>
+          </div>
+          <h2>Análise de Planta P&amp;ID</h2>
+          <p>
+            Envie seu diagrama técnico para identificação e classificação de equipamentos conforme normas de instrumentação.
+          </p>
         </div>
 
         {!result && !loading && (
@@ -112,7 +133,7 @@ function App() {
 
         {error && (
           <div className="error-message" role="alert">
-            <p>{error}</p>
+            <strong>Atenção:</strong> {error}
           </div>
         )}
 
@@ -125,13 +146,20 @@ function App() {
             downloading={downloading}
           />
         )}
-      </section>
+      </main>
 
-      <footer id="sobre">
-        <img src="/iastech-logo.png" alt="IASTECH" />
-        <span>TAGVision P&amp;ID · Soluções em automação industrial</span>
+      <footer id="sobre" role="contentinfo">
+        <div className="footer-content">
+          <div className="footer-brand">
+            <img src="/iastech-logo.png" alt="IASTECH" />
+            <span>TAGVision P&amp;ID · Soluções em automação industrial</span>
+          </div>
+          <div className="footer-links">
+            <span>Tecnologia de Reconhecimento Óptico de Diagramas Industriais</span>
+          </div>
+        </div>
       </footer>
-    </main>
+    </div>
   );
 }
 
