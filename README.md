@@ -43,49 +43,61 @@ O pipeline atual executa as seguintes etapas:
 
 ```mermaid
 flowchart LR
-    A[Upload] --> B[OpenCV]
+    A[Imagem P&ID] --> B[OpenCV]
     B --> C[EasyOCR]
-    C --> D[Normalização / Recomposição]
-    D --> E[Classificação]
-    E --> F[FastAPI]
-    F --> G[React]
-    G --> H[DataViz / PDF]
+    C --> D[Normalização]
+    D --> E[Recomposição Espacial]
+    E --> F[Validação Técnica]
+    F --> G[Classificação]
+    G --> H[FastAPI]
+    H --> I[Frontend React]
+    H --> J[Relatório PDF]
+    H --> K[Avaliação do Modelo]
 ```
 
 ## Avaliação
 
-O projeto possui um framework de avaliação em `projeto/evaluation/`, baseado em um arquivo de ground truth validado manualmente e nos resultados gerados pelo pipeline.
+O projeto possui um framework de avaliação em `projeto/evaluation/`, baseado em um arquivo de ground truth revisado manualmente e nos resultados gerados pelo pipeline.
 
-Baseline atual da amostra validada manualmente:
+A amostra atual contém 6 diagramas e 116 TAGs de referência anotadas manualmente.
+
+Resultados da avaliação atualmente registrada no projeto:
 
 | Métrica | Valor |
 |---|---:|
 | Imagens avaliadas | 6 |
-| TAGs de referência | 38 |
-| TP | 38 |
-| FP | 2 |
-| FN | 0 |
-| Precision | 95.0% |
-| Recall | 100.0% |
-| F1-Score | 0.9744 |
+| TAGs de referência | 116 |
+| TP | 33 |
+| FP | 18 |
+| FN | 83 |
+| Precision | 64,7% |
+| Recall | 28,4% |
+| F1-Score | 0,3952 |
 
-Esses resultados são obtidos em uma amostra validada manualmente e não representam uma garantia universal para qualquer diagrama.
+A Precision indica quantas das TAGs detectadas pelo sistema estavam corretas.  
+O Recall indica quantas das TAGs realmente existentes nos diagramas foram encontradas.
+
+Os resultados mostram que o principal desafio atual da solução é ampliar a cobertura das detecções, especialmente em TAGs pequenas, fragmentadas ou presentes em diagramas de baixa qualidade.
+
+Esses resultados foram obtidos em uma amostra validada manualmente e não representam garantia de desempenho universal para qualquer diagrama industrial.
 
 ## Matriz de Confusão
 
-O projeto gera uma matriz de confusão de status a partir do framework de avaliação existente. O arquivo atual fica em:
+O framework de avaliação também gera uma matriz de confusão para analisar o status das TAGs reconhecidas.
 
-```text
-projeto/evaluation/results/confusion_matrix_status.csv
-```
+Arquivo gerado:
+
+`projeto/evaluation/results/confusion_matrix_status.csv`
 
 Matriz atual:
 
 | Status real \ Status previsto | Identificado | Possível TAG | Desconhecido |
 |---|---:|---:|---:|
 | Identificado | 5 | 0 | 0 |
-| Possível TAG | 0 | 33 | 0 |
+| Possível TAG | 0 | 28 | 0 |
 | Desconhecido | 0 | 0 | 0 |
+
+A matriz complementa as métricas de Precision, Recall e F1-Score e permite visualizar como as detecções reconhecidas foram classificadas pelo sistema.
 
 ## Como Executar
 
@@ -103,7 +115,7 @@ No Windows:
 .venv\Scripts\activate
 ```
 
-Instale as dependências do backend:
+Instale as dependências:
 
 ```bash
 pip install -r projeto/requirements.txt
@@ -115,7 +127,7 @@ Inicie a API FastAPI:
 python -m uvicorn projeto.api:app --reload
 ```
 
-A API fica disponível em:
+A API ficará disponível em:
 
 ```text
 http://localhost:8000
@@ -123,7 +135,7 @@ http://localhost:8000
 
 ### Frontend
 
-Entre na pasta do frontend:
+Entre na pasta:
 
 ```bash
 cd frontend
@@ -141,7 +153,7 @@ Inicie o Vite:
 npm run dev
 ```
 
-O frontend fica disponível em:
+O frontend ficará disponível em:
 
 ```text
 http://localhost:5173
@@ -153,6 +165,12 @@ Com as dependências do backend instaladas, execute:
 
 ```bash
 python projeto/evaluation/evaluate.py
+```
+
+Se o Python global não possuir as dependências do projeto, no Windows utilize:
+
+```bash
+.venv\Scripts\python.exe projeto\evaluation\evaluate.py
 ```
 
 Os resultados são salvos em:
@@ -196,27 +214,28 @@ projeto/evaluation/results/
 │   ├── reports_api/
 │   ├── results_api/
 │   └── temp/
-├── resultados/
 ├── tabela_equipamentos.csv
 ├── iniciar_hackathon.bat
-└── parar_hackathon.bat
+├── parar_hackathon.bat
+└── README.md
 ```
 
 ## Tecnologias
 
-Backend:
+### Backend
 
 - Python
 - FastAPI
 - Uvicorn
 - OpenCV
 - EasyOCR
+- PyTorch
 - pandas
 - NumPy
 - python-multipart
 - ReportLab
 
-Frontend:
+### Frontend
 
 - React
 - Vite
@@ -224,20 +243,80 @@ Frontend:
 - lucide-react
 - oxlint
 
+## Versão Portátil
+
+Também foi criada uma versão portátil para Windows, empacotada com PyInstaller.
+
+Objetivo:
+
+- executar sem instalar Python;
+- executar sem instalar Node.js;
+- usar caminhos relativos;
+- transportar por pendrive, Google Drive, OneDrive ou outro serviço de nuvem;
+- funcionar após extrair os arquivos em outro computador Windows;
+- incluir modelos necessários do EasyOCR;
+- iniciar por meio de `INICIAR_TAGVISION.bat`.
+
+A versão portátil já foi validada com:
+
+- inicialização do executável;
+- endpoint `/health`;
+- abertura do frontend;
+- processamento de `0.jpg`;
+- abertura da imagem anotada;
+- geração de PDF;
+- painel de avaliação do modelo.
+
 ## Limitações Atuais
 
-- O OCR pode variar conforme qualidade, resolução e contraste do documento.
-- Diagramas fora dos padrões suportados podem exigir ajustes de parâmetros ou regras.
-- O catálogo e os prefixos técnicos atuais não representam cobertura completa de ISA-5.1.
-- Os resultados dependem da legibilidade do documento e da separação visual das TAGs.
+- O principal desafio atual é o Recall: algumas TAGs existentes no diagrama ainda não são detectadas.
+- TAGs pequenas, fragmentadas ou com pouco contraste apresentam maior dificuldade para o OCR.
+- A qualidade do resultado pode variar conforme resolução, contraste e densidade visual do documento.
+- Diagramas muito poluídos ou com símbolos/textos sobrepostos podem reduzir a capacidade de detecção.
+- O catálogo e os prefixos técnicos atuais não representam cobertura completa da ISA-5.1.
+- O sistema é voltado principalmente para extração e classificação baseada nas TAGs reconhecidas; não deve ser interpretado como um detector universal de todos os símbolos industriais.
+- O benchmark atual utiliza 6 imagens e 116 TAGs de referência, sendo uma amostra de validação e não uma garantia de desempenho universal.
 
 ## Diferenciais
 
 - TAGs fora do catálogo podem ser exibidas como `Possível TAG`.
 - Recomposição espacial de TAGs fragmentadas.
 - Classificação por grupo técnico.
+- Catálogo técnico integrado.
 - Benchmark integrado com ground truth e métricas reais.
-- Painel visual para análise dos resultados e avaliação do modelo.
+- Matriz de confusão.
+- Painel visual para análise dos resultados.
+- DataViz.
 - Geração de relatório PDF.
+- API FastAPI para integração.
+- Versão portátil para Windows.
+
+## Fluxo Resumido
+
+```text
+P&ID
+  ↓
+OpenCV
+  ↓
+EasyOCR
+  ↓
+Normalização
+  ↓
+Recomposição espacial
+  ↓
+Validação técnica
+  ↓
+Classificação
+  ↓
+TAGVision
+  ↓
+Imagem anotada + dados estruturados + DataViz + PDF
+```
 
 ## Equipe
+
+Projeto desenvolvido para o Hackathon IASTECH — IA aplicada à Engenharia Industrial.
+
+## Repositório
+
+https://github.com/Wani-Brito/Hackathon
