@@ -1,0 +1,366 @@
+[
+  {
+    "id": 1,
+    "tag": "LAL-0034",
+    "prefixo": "LAL",
+    "numero": "0034",
+    "texto_ocr_bruto": "LAL-0034",
+    "confianca": 87.27,
+    "bbox_final": {
+      "x": 1104,
+      "y": 742,
+      "width": 42,
+      "height": 40
+    },
+    "bbox_prefixo_estimada": {
+      "x": 1104,
+      "y": 742,
+      "width": 42,
+      "height": 20
+    },
+    "bbox_numero_estimada": {
+      "x": 1104,
+      "y": 762,
+      "width": 42,
+      "height": 20
+    },
+    "alinhamento": "Vertical (ISA Bubble)",
+    "posicao_planta": "x=1104, y=742, w=42, h=40"
+  },
+  {
+    "id": 2,
+    "tag": "PSV-0010",
+    "prefixo": "PSV",
+    "numero": "0010",
+    "texto_ocr_bruto": "PSV-0010",
+    "confianca": 89.25,
+    "bbox_final": {
+      "x": 452,
+      "y": 434,
+      "width": 42,
+      "height": 44
+    },
+    "bbox_prefixo_estimada": {
+      "x": 452,
+      "y": 434,
+      "width": 42,
+      "height": 22
+    },
+    "bbox_numero_estimada": {
+      "x": 452,
+      "y": 456,
+      "width": 42,
+      "height": 22
+    },
+    "alinhamento": "Vertical (ISA Bubble)",
+    "posicao_planta": "x=452, y=434, w=42, h=44"
+  },
+  {
+    "id": 3,
+    "tag": "PSV-0011",
+    "prefixo": "PSV",
+    "numero": "0011",
+    "texto_ocr_bruto": "PSV-0011",
+    "confianca": 95.05,
+    "bbox_final": {
+      "x": 841,
+      "y": 432,
+      "width": 39,
+      "height": 45
+    },
+    "bbox_prefixo_estimada": {
+      "x": 841,
+      "y": 432,
+      "width": 39,
+      "height": 22
+    },
+    "bbox_numero_estimada": {
+      "x": 841,
+      "y": 454,
+      "width": 39,
+      "height": 23
+    },
+    "alinhamento": "Vertical (ISA Bubble)",
+    "posicao_planta": "x=841, y=432, w=39, h=45"
+  },
+  {
+    "id": 4,
+    "tag": "LSH-0002",
+    "prefixo": "LSH",
+    "numero": "0002",
+    "texto_ocr_bruto": "LSH-0002",
+    "confianca": 99.93,
+    "bbox_final": {
+      "x": 834,
+      "y": 738,
+      "width": 44,
+      "height": 45
+    },
+    "bbox_prefixo_estimada": {
+      "x": 834,
+      "y": 738,
+      "width": 44,
+      "height": 22
+    },
+    "bbox_numero_estimada": {
+      "x": 834,
+      "y": 760,
+      "width": 44,
+      "height": 23
+    },
+    "alinhamento": "Vertical (ISA Bubble)",
+    "posicao_planta": "x=834, y=738, w=44, h=45"
+  },
+  {
+    "id": 5,
+    "tag": "LSHL-0001",
+    "prefixo": "LSHL",
+    "numero": "0001",
+    "texto_ocr_bruto": "LSHL-0001",
+    "confianca": 87.16,
+    "bbox_final": {
+      "x": 740,
+      "y": 738,
+      "width": 48,
+      "height": 45
+    },
+    "bbox_prefixo_estimada": {
+      "x": 740,
+      "y": 738,
+      "width": 48,
+      "height": 22
+    },
+    "bbox_numero_estimada": {
+      "x": 740,
+      "y": 760,
+      "width": 48,
+      "height": 23
+    },
+    "alinhamento": "Vertical (ISA Bubble)",
+    "posicao_planta": "x=740, y=738, w=48, h=45"
+  },
+  {
+    "id": 6,
+    "tag": "LG-0031",
+    "prefixo": "LG",
+    "numero": "0031",
+    "texto_ocr_bruto": "LG-0031",
+    "confianca": 99.51,
+    "bbox_final": {
+      "x": 641,
+      "y": 738,
+      "width": 40,
+      "height": 45
+    },
+    "bbox_prefixo_estimada": {
+      "x": 641,
+      "y": 738,
+      "width": 40,
+      "height": 22
+    },
+    "bbox_numero_estimada": {
+      "x": 641,
+      "y": 760,
+      "width": 40,
+      "height": 23
+    },
+    "alinhamento": "Vertical (ISA Bubble)",
+    "posicao_planta": "x=641, y=738, w=40, h=45"
+  },
+  {
+    "id": 7,
+    "tag": "LAH-0002",
+    "prefixo": "LAH",
+    "numero": "0002",
+    "texto_ocr_bruto": "LAH-0002",
+    "confianca": 99.11,
+    "bbox_final": {
+      "x": 927,
+      "y": 741,
+      "width": 42,
+      "height": 41
+    },
+    "bbox_prefixo_estimada": {
+      "x": 927,
+      "y": 741,
+      "width": 42,
+      "height": 20
+    },
+    "bbox_numero_estimada": {
+      "x": 927,
+      "y": 761,
+      "width": 42,
+      "height": 21
+    },
+    "alinhamento": "Vertical (ISA Bubble)",
+    "posicao_planta": "x=927, y=741, w=42, h=41"
+  },
+  {
+    "id": 8,
+    "tag": "PSLL-00168",
+    "prefixo": "PSLL",
+    "numero": "00168",
+    "texto_ocr_bruto": "PSLL-00168",
+    "confianca": 92.14,
+    "bbox_final": {
+      "x": 1408,
+      "y": 148,
+      "width": 52,
+      "height": 48
+    },
+    "bbox_prefixo_estimada": {
+      "x": 1408,
+      "y": 148,
+      "width": 52,
+      "height": 24
+    },
+    "bbox_numero_estimada": {
+      "x": 1408,
+      "y": 172,
+      "width": 52,
+      "height": 24
+    },
+    "alinhamento": "Vertical (ISA Bubble)",
+    "posicao_planta": "x=1408, y=148, w=52, h=48"
+  },
+  {
+    "id": 9,
+    "tag": "PSL-0017",
+    "prefixo": "PSL",
+    "numero": "0017",
+    "texto_ocr_bruto": "PSL-0017",
+    "confianca": 99.7,
+    "bbox_final": {
+      "x": 1113,
+      "y": 151,
+      "width": 40,
+      "height": 42
+    },
+    "bbox_prefixo_estimada": {
+      "x": 1113,
+      "y": 151,
+      "width": 40,
+      "height": 21
+    },
+    "bbox_numero_estimada": {
+      "x": 1113,
+      "y": 172,
+      "width": 40,
+      "height": 21
+    },
+    "alinhamento": "Vertical (ISA Bubble)",
+    "posicao_planta": "x=1113, y=151, w=40, h=42"
+  },
+  {
+    "id": 10,
+    "tag": "PT-0014",
+    "prefixo": "PT",
+    "numero": "0014",
+    "texto_ocr_bruto": "PT-0014",
+    "confianca": 99.06,
+    "bbox_final": {
+      "x": 947,
+      "y": 151,
+      "width": 40,
+      "height": 42
+    },
+    "bbox_prefixo_estimada": {
+      "x": 947,
+      "y": 151,
+      "width": 40,
+      "height": 21
+    },
+    "bbox_numero_estimada": {
+      "x": 947,
+      "y": 172,
+      "width": 40,
+      "height": 21
+    },
+    "alinhamento": "Vertical (ISA Bubble)",
+    "posicao_planta": "x=947, y=151, w=40, h=42"
+  },
+  {
+    "id": 11,
+    "tag": "TE-0003",
+    "prefixo": "TE",
+    "numero": "0003",
+    "texto_ocr_bruto": "TE-0003",
+    "confianca": 97.96,
+    "bbox_final": {
+      "x": 854,
+      "y": 151,
+      "width": 42,
+      "height": 42
+    },
+    "bbox_prefixo_estimada": {
+      "x": 854,
+      "y": 151,
+      "width": 42,
+      "height": 21
+    },
+    "bbox_numero_estimada": {
+      "x": 854,
+      "y": 172,
+      "width": 42,
+      "height": 21
+    },
+    "alinhamento": "Vertical (ISA Bubble)",
+    "posicao_planta": "x=854, y=151, w=42, h=42"
+  },
+  {
+    "id": 12,
+    "tag": "PAL-0017",
+    "prefixo": "PAL",
+    "numero": "0017",
+    "texto_ocr_bruto": "PAL-0017",
+    "confianca": 99.83,
+    "bbox_final": {
+      "x": 1114,
+      "y": 54,
+      "width": 38,
+      "height": 42
+    },
+    "bbox_prefixo_estimada": {
+      "x": 1114,
+      "y": 54,
+      "width": 38,
+      "height": 21
+    },
+    "bbox_numero_estimada": {
+      "x": 1114,
+      "y": 75,
+      "width": 38,
+      "height": 21
+    },
+    "alinhamento": "Vertical (ISA Bubble)",
+    "posicao_planta": "x=1114, y=54, w=38, h=42"
+  },
+  {
+    "id": 13,
+    "tag": "PSLL-0016",
+    "prefixo": "PSLL",
+    "numero": "0016",
+    "texto_ocr_bruto": "PSLL-0016",
+    "confianca": 99.91,
+    "bbox_final": {
+      "x": 1567,
+      "y": 21,
+      "width": 44,
+      "height": 47
+    },
+    "bbox_prefixo_estimada": {
+      "x": 1567,
+      "y": 21,
+      "width": 44,
+      "height": 23
+    },
+    "bbox_numero_estimada": {
+      "x": 1567,
+      "y": 44,
+      "width": 44,
+      "height": 24
+    },
+    "alinhamento": "Vertical (ISA Bubble)",
+    "posicao_planta": "x=1567, y=21, w=44, h=47"
+  }
+]

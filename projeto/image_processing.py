@@ -15,8 +15,50 @@ class OCRReaderCache:
 
 
 class PIDImageProcessor:
+    # Lista explícita e documentada de prefixos técnicos comuns em P&ID (ISA-5.1 e equipamentos industriais).
+    TECHNICAL_PREFIXES = {
+        # Pressão
+        "PT", "PSL", "PSLL", "PSV", "PSE", "PAL", "PAH", "PAHH", "PC", "PI", "PIT", "PDT", "PDS", "PDSH",
+        # Nível
+        "LT", "LSH", "LSL", "LSHL", "LAH", "LAL", "LAHH", "LALL", "LC", "LI", "LG", "LIT", "LS", "LDT",
+        # Temperatura
+        "TT", "TE", "TSH", "TSL", "TAH", "TAL", "TC", "TI", "TIT", "TW", "TD", "TDT",
+        # Vazão
+        "FT", "FE", "FC", "FI", "FIT", "FAH", "FAL", "FV", "FS", "FQ", "FQT", "FQI",
+        # Válvulas e Atuadores
+        "HV", "XV", "PV", "TV", "LV", "FV", "ASV", "CV", "SDV", "BDV", "MOV", "SOV", "PRV",
+        # Controladores e Intertravamentos
+        "ASC", "TIC", "PIC", "LIC", "FIC", "AIC", "SIC", "KOD", "CSO", "CSC",
+        # Posição / Analisadores / Chaves
+        "ZSH", "ZSL", "ZT", "ZC", "ZI", "AT", "AC", "AI", "ASH", "ASL", "AF", "AS",
+        # Equipamentos Mecânicos
+        "V", "P", "E", "T", "C", "K", "M", "TK", "B", "R", "D", "S",
+        # Estados de Falha de Válvula
+        "FO", "FC", "FL", "FL/DO", "FL/DC",
+    }
+
+    # TAGs / Abreviações técnicas válidas para emissão como TAG autônoma (sem necessidade de número de malha)
+    STANDALONE_TECHNICAL_TAGS = {
+        "FO", "FC", "FL", "FL/DO", "FL/DC",
+        "TC", "FC", "PC", "LC", "FE", "HV",
+        "ASC", "ASV", "CSO", "CSC", "KOD",
+    }
+
+    # Palavras e textos técnicos comuns em diagramas que NÃO devem ser promovidos a TAG
+    STOPWORDS = {
+        "NOTE", "WATER", "PUMP", "TANK", "SAFE", "VENT", "DRAIN", "FLARE", "EAU",
+        "TEMP", "LEVEL", "FLOW", "VALVE", "OPEN", "CLOSE", "MOTOR", "USING", "BARREL",
+        "TOTAL", "AREA", "DATE", "DRAW", "SCALE", "PAGE", "TYPE", "LINE", "INCH",
+        "SPEC", "PIPE", "FROM", "TO", "BY", "FOR", "AND", "THE", "ALL", "SET",
+        "MAX", "MIN", "HIGH", "LOW", "AUTO", "MAN", "MANUAL", "SUPPLY", "RETURN",
+        "INLET", "OUTLET", "SAMPLE", "GAUGE", "PANEL", "FIELD", "LOCAL", "ALARM",
+        "TRIP", "STOP", "START", "RUN", "FAIL", "POWER", "HEAT", "AIR", "GAS", "OIL",
+        "CHEMICAL", "PRODUCT", "STORAGE", "VENDOR", "COMPRESSOR", "LOCATION", "AFTERCOOLER",
+        "SUCTION", "DISCHARGE", "INTERMITTENT", "BLOWDOWN", "RECIRCULATION",
+    }
+
     TECHNICAL_TAG_PATTERN = re.compile(
-        r"^(?:[A-Z]{1,4}\d{2,4}[A-Z]?|[A-Z]{1,4}[/-][A-Z]{1,3}|FL/DC|FL/DO|FO|FC|FL)$"
+        r"^(?:[A-Z]{1,4}[-_]?\d{1,5}[A-Z]?|[A-Z]{1,4}[/-][A-Z]{1,3}|FL/DC|FL/DO|FO|FC|FL)$"
     )
 
     def __init__(self, image_path, reader=None, tag_catalog=None, logger=print):
@@ -36,8 +78,7 @@ class PIDImageProcessor:
         self.region_stats = self._empty_region_stats()
 
         self.reader = reader or OCRReaderCache.get_reader()
-        self.tag_catalog = tag_catalog or {}
-        self.tag_prefixes = self._build_tag_prefixes(self.tag_catalog)
+        self.tag_catalog = tag_catalog or {}
         self.logger = logger
 
     @staticmethod
@@ -49,15 +90,6 @@ class PIDImageProcessor:
             "ocr_texts": 0,
             "valid_detections": 0,
         }
-
-    @staticmethod
-    def _build_tag_prefixes(tag_catalog):
-        prefixes = set()
-        for tag in tag_catalog:
-            match = re.match(r"[A-Z]+", tag)
-            if match:
-                prefixes.add(match.group(0))
-        return prefixes
 
     def convert_to_grayscale(self):
         self.gray_image = cv2.cvtColor(self.original_image, cv2.COLOR_BGR2GRAY)
@@ -104,9 +136,17 @@ class PIDImageProcessor:
         self.contours = contours
         return contours
 
-    @staticmethod
-    def _clean_ocr_text(text):
-        return re.sub(r"\s+", " ", text or "").strip().upper()
+    @classmethod
+    def _clean_ocr_text(cls, text):
+        t = re.sub(r"\s+", " ", text or "").strip().upper()
+        # Normalização contextual segura para falhas de válvula com barra (ex: FLIDO -> FL/DO)
+        t = re.sub(r"\bFL[I1/|]D[O0]\b", "FL/DO", t)
+        t = re.sub(r"\bFL[I1/|]DC\b", "FL/DC", t)
+        # Unifica espaços em hífens para tags compostas (ex: PT - 0004 -> PT-0004)
+        t = re.sub(r"([A-Z]{1,4})\s*[-_]\s*(\d{1,5}[A-Z]?)", r"\1-\2", t)
+        # Correção contextual segura: loop de 4 dígitos terminado em 8 lido no lugar de B (ex: PSLL-00168 -> PSLL-0016B)
+        t = re.sub(r"^(PSLL|PSL|PSV|PT|LT|TT|FT|LSH|LSL|LAH|LAL)-(\d{4})8$", r"\1-\2B", t)
+        return t
 
     @classmethod
     def _normalize_tag(cls, text):
@@ -126,16 +166,39 @@ class PIDImageProcessor:
 
         return None
 
-    def _is_possible_technical_tag(self, text):
-        tag = self._normalize_tag(text)
-        if len(tag) < 2 or len(tag) > 12:
+    @classmethod
+    def _is_possible_technical_tag(cls, text):
+        tag = cls._normalize_tag(text)
+        if len(tag) < 2 or len(tag) > 15:
+            return False
+        if tag in cls.STOPWORDS:
             return False
         if tag.isdigit():
             return False
-        prefix_match = re.match(r"[A-Z]+", tag)
-        if self.tag_prefixes and (not prefix_match or prefix_match.group(0) not in self.tag_prefixes):
+
+        # Rejeita palavras comuns compostas com números (ex: TANK2, PUMP1, NOTE3)
+        base_letters = re.match(r"^[A-Z]+", tag)
+        if base_letters and base_letters.group(0) in cls.STOPWORDS:
             return False
-        return bool(self.TECHNICAL_TAG_PATTERN.match(tag))
+
+        # Caso 1: TAG com sufixo numérico (ex: PT-0004, PSL-0003, V-001, LT210, ZSH1, AF2)
+        if any(c.isdigit() for c in tag):
+            m = re.match(r"^([A-Z]{1,4})[-_]?(\d{1,5}[A-Z]?)$", tag)
+            if m:
+                prefix = m.group(1)
+                # Prefixo deve ser estritamente técnico
+                if prefix in cls.TECHNICAL_PREFIXES:
+                    # Para equipamentos mecânicos de letra única (V, P, E, T, C, K, M), exige hífen (ex: V-001, P-101)
+                    if len(prefix) == 1:
+                        return "-" in tag
+                    return True
+            return False
+
+        # Caso 2: Abreviação técnica autônoma sem número (ex: TC, PC, FC, LC, FE, HV, ASC, ASV, KOD, CSO, FO, FC, FL)
+        if tag in cls.STANDALONE_TECHNICAL_TAGS:
+            return True
+
+        return False
 
     def _region_looks_useful_for_ocr(self, x, y, w, h, contour_area, min_area):
         image_h, image_w = self.original_image.shape[:2]
@@ -167,10 +230,11 @@ class PIDImageProcessor:
 
         return True
 
-    def _build_detection(self, text, confidence, bbox):
+    def _build_detection(self, text, confidence, bbox, is_recomposed=False):
         texto_ocr = self._clean_ocr_text(text)
         known_tag = self._extract_known_tag(texto_ocr)
 
+        # 1. Catálogo exato -> Identificado
         if known_tag:
             reference = self.tag_catalog[known_tag]
             return {
@@ -181,8 +245,10 @@ class PIDImageProcessor:
                 "status": "Identificado",
                 "confidence": round(float(confidence), 4),
                 "bbox": bbox,
+                "is_recomposed": is_recomposed,
             }
 
+        # 2. Fora do catálogo mas sintaticamente válida -> Possível TAG
         possible_tag = self._normalize_tag(texto_ocr)
         if self._is_possible_technical_tag(texto_ocr):
             return {
@@ -193,9 +259,149 @@ class PIDImageProcessor:
                 "status": "Possível TAG",
                 "confidence": round(float(confidence), 4),
                 "bbox": bbox,
+                "is_recomposed": is_recomposed,
             }
 
         return None
+
+    @classmethod
+    def _recompose_split_tags(cls, raw_items, tag_catalog=None):
+        if not raw_items:
+            return []
+
+        tag_catalog = tag_catalog or {}
+        complete_items = []
+        prefix_items = []
+        number_items = []
+
+        for item in raw_items:
+            norm = item["norm"]
+            clean = item["text"]
+
+            # 1. Catálogo
+            if norm in tag_catalog or clean in tag_catalog:
+                complete_items.append(item)
+                continue
+
+            # 2. TAG completa contendo letras e números
+            if any(c.isalpha() for c in norm) and any(c.isdigit() for c in norm):
+                if cls._is_possible_technical_tag(norm):
+                    complete_items.append(item)
+                continue
+
+            # 3. Sufixo numérico puro (1 a 5 dígitos ou dígitos com letra sufixo ex: 0016B, 0004)
+            if re.match(r"^\d{1,5}[A-Z]?$", norm):
+                if not re.search(r'["\'#]|PO\d|PA\d|\d+["\']', clean):
+                    number_items.append(item)
+                continue
+
+            # 4. Prefixo técnico de instrumento
+            if norm in cls.TECHNICAL_PREFIXES and norm not in cls.STOPWORDS:
+                prefix_items.append(item)
+
+        used_number_indices = set()
+        used_prefix_indices = set()
+        recomposed_detections = []
+
+        for p_idx, p in enumerate(prefix_items):
+            best_n = None
+            best_dist = float("inf")
+            best_n_idx = None
+
+            p_box = p["bbox"]
+            p_cx = p_box["x"] + p_box["width"] / 2.0
+            p_cy = p_box["y"] + p_box["height"] / 2.0
+
+            for n_idx, n in enumerate(number_items):
+                if n_idx in used_number_indices:
+                    continue
+
+                n_box = n["bbox"]
+                n_cx = n_box["x"] + n_box["width"] / 2.0
+                n_cy = n_box["y"] + n_box["height"] / 2.0
+
+                # Cenário A: Alinhamento Vertical (ISA Bubble)
+                dy = n_box["y"] - (p_box["y"] + p_box["height"])
+                dx_center = abs(p_cx - n_cx)
+                max_dy = max(p_box["height"] * 1.8, 35)
+                max_dx = max(p_box["width"], n_box["width"]) * 0.9
+
+                if -5 <= dy <= max_dy and dx_center <= max_dx:
+                    dist = dx_center * 1.5 + dy
+                    if dist < best_dist:
+                        best_dist = dist
+                        best_n = n
+                        best_n_idx = n_idx
+                    continue
+
+                # Cenário B: Alinhamento Horizontal (Prefixo + Número)
+                dx = n_box["x"] - (p_box["x"] + p_box["width"])
+                dy_center = abs(p_cy - n_cy)
+                max_dx_h = max(p_box["width"] * 1.5, 30)
+                max_dy_h = max(p_box["height"], n_box["height"]) * 0.6
+
+                if -5 <= dx <= max_dx_h and dy_center <= max_dy_h:
+                    dist = dx + dy_center * 1.5
+                    if dist < best_dist:
+                        best_dist = dist
+                        best_n = n
+                        best_n_idx = n_idx
+
+            if best_n is not None:
+                used_prefix_indices.add(p_idx)
+                used_number_indices.add(best_n_idx)
+
+                composed_raw = f"{p['norm']}-{best_n['norm']}"
+                composed_tag = cls._clean_ocr_text(composed_raw)
+                n_box = best_n["bbox"]
+
+                combined_x = min(p_box["x"], n_box["x"])
+                combined_y = min(p_box["y"], n_box["y"])
+                combined_w = max(p_box["x"] + p_box["width"], n_box["x"] + n_box["width"]) - combined_x
+                combined_h = max(p_box["y"] + p_box["height"], n_box["y"] + n_box["height"]) - combined_y
+                combined_bbox = {
+                    "x": int(combined_x),
+                    "y": int(combined_y),
+                    "width": int(combined_w),
+                    "height": int(combined_h),
+                }
+
+                combined_conf = round((p["prob"] + best_n["prob"]) / 2.0, 4)
+
+                recomposed_detections.append({
+                    "texto_ocr": f"{p['text']} {best_n['text']}",
+                    "tag": composed_tag,
+                    "confidence": combined_conf,
+                    "bbox": combined_bbox,
+                    "is_recomposed": True,
+                })
+
+        final_detections = []
+
+        for item in complete_items:
+            final_detections.append({
+                "texto_ocr": item["text"],
+                "tag": item["norm"],
+                "confidence": item["prob"],
+                "bbox": item["bbox"],
+                "is_recomposed": False,
+            })
+
+        final_detections.extend(recomposed_detections)
+
+        # Apenas prefixos pertencentes a STANDALONE_TECHNICAL_TAGS são emitidos isoladamente
+        for p_idx, p in enumerate(prefix_items):
+            if p_idx not in used_prefix_indices:
+                if p["norm"] in cls.STANDALONE_TECHNICAL_TAGS or p["norm"] in tag_catalog:
+                    final_detections.append({
+                        "texto_ocr": p["text"],
+                        "tag": p["norm"],
+                        "confidence": p["prob"],
+                        "bbox": p["bbox"],
+                        "is_recomposed": False,
+                    })
+
+        return final_detections
 
     def draw_bounding_boxes(self, min_area=500):
         if self.contours is None:
@@ -209,7 +415,7 @@ class PIDImageProcessor:
         self.region_stats = self._empty_region_stats()
         self.region_stats["contours_total"] = len(self.contours)
 
-        seen_detections = set()
+        raw_ocr_items = []
         box_count = 0
 
         for contour in self.contours:
@@ -232,52 +438,96 @@ class PIDImageProcessor:
                 try:
                     self.region_stats["regions_sent_to_ocr"] += 1
                     results = self.reader.readtext(roi)
-                    for _, text, prob in results:
+                    for sub_box, text, prob in results:
                         clean_text = self._clean_ocr_text(text)
                         if not clean_text or prob < 0.35:
                             continue
+
+                        # Strip pontuação inicial/final (ex: "(LSHL" → "LSHL")
+                        # Rejeita apenas se brackets/chars estranhos forem INTERNOS ao token
+                        text_stripped = re.sub(r"^[()\[\]<>.,\-_\s]+|[()\[\]<>.,\-_\s]+$", "", text)
+                        if not text_stripped:
+                            continue
+                        if re.search(r"[\]\[\{\}\<\>]", text_stripped):
+                            continue
+                        # Usa o texto sem pontuação exterior daqui em diante
+                        text = text_stripped
+
+                        # Rejeita códigos de linha com polegadas / tubulação
+                        if re.search(r'["\'#]|PO\d|PA\d|\d+["\']', text):
+                            continue
+
+                        if sub_box and len(sub_box) == 4:
+                            sub_xs = [pt[0] for pt in sub_box]
+                            sub_ys = [pt[1] for pt in sub_box]
+                            gx = int(x + min(sub_xs))
+                            gy = int(y + min(sub_ys))
+                            gw = int(max(sub_xs) - min(sub_xs))
+                            gh = int(max(sub_ys) - min(sub_ys))
+                            item_bbox = {"x": gx, "y": gy, "width": gw, "height": gh}
+                        else:
+                            item_bbox = bbox
 
                         self.region_stats["ocr_texts"] += 1
                         self.ocr_results.append(
                             {
                                 "texto_ocr": clean_text,
                                 "confidence": round(float(prob), 4),
-                                "bbox": bbox,
+                                "bbox": item_bbox,
                             }
                         )
 
-                        detection = self._build_detection(clean_text, prob, bbox)
-                        if detection is None:
-                            continue
+                        raw_ocr_items.append({
+                            "text": clean_text,
+                            "norm": self._normalize_tag(clean_text),
+                            "prob": round(float(prob), 4),
+                            "bbox": item_bbox,
+                        })
 
-                        detection_key = (detection["tag"], bbox["x"], bbox["y"])
-                        if detection_key in seen_detections:
-                            continue
-
-                        seen_detections.add(detection_key)
-                        self.detections.append(detection)
-                        self.region_stats["valid_detections"] += 1
-                        if detection["tag"] not in self.detected_tags:
-                            self.detected_tags.append(detection["tag"])
                 except Exception as exc:
                     message = f"OCR falhou na bbox {bbox}: {exc}"
                     self.ocr_errors.append(message)
                     if self.logger:
                         self.logger(f"    AVISO: {message}")
 
-            has_valid_detection = any(item["bbox"] == bbox for item in self.detections)
-            color = (0, 255, 0) if has_valid_detection else (0, 180, 255)
-            cv2.rectangle(self.image_with_boxes, (x, y), (x + w, y + h), color, 2)
+        recomposed_items = self._recompose_split_tags(raw_ocr_items, tag_catalog=self.tag_catalog)
+
+        seen_detections = set()
+        for item in recomposed_items:
+            detection = self._build_detection(
+                item["tag"],
+                item["confidence"],
+                item["bbox"],
+                is_recomposed=item.get("is_recomposed", False),
+            )
+            if detection is None:
+                continue
+
+            detection_key = (detection["tag"], detection["bbox"]["x"], detection["bbox"]["y"])
+            if detection_key in seen_detections:
+                continue
+
+            seen_detections.add(detection_key)
+            self.detections.append(detection)
+            self.region_stats["valid_detections"] += 1
+            if detection["tag"] not in self.detected_tags:
+                self.detected_tags.append(detection["tag"])
+
+            color = (0, 255, 0) if detection["status"] == "Identificado" else (0, 180, 255)
+            dx = detection["bbox"]["x"]
+            dy = detection["bbox"]["y"]
+            dw = detection["bbox"]["width"]
+            dh = detection["bbox"]["height"]
+            cv2.rectangle(self.image_with_boxes, (dx, dy), (dx + dw, dy + dh), color, 2)
             cv2.putText(
                 self.image_with_boxes,
-                f"Obj {box_count}",
-                (x, y - 10),
+                detection["tag"],
+                (dx, max(15, dy - 6)),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 0.5,
                 color,
                 2,
             )
-
             box_count += 1
 
         return self.image_with_boxes
@@ -302,7 +552,3 @@ class PIDImageProcessor:
             "ocr_errors": self.ocr_errors,
             "region_stats": self.region_stats,
         }
-
-
-
-

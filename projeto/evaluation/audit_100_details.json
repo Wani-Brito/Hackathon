@@ -1,0 +1,130 @@
+[
+  {
+    "id": 1,
+    "composed_tag": "LAL-0034",
+    "prefix": "LAL",
+    "prefix_text": "LAL",
+    "prefix_prob": 0.9996,
+    "prefix_bbox": {
+      "x": 1112,
+      "y": 743,
+      "width": 30,
+      "height": 16
+    },
+    "number": "0034",
+    "number_text": "0034",
+    "number_prob": 0.9981,
+    "number_bbox": {
+      "x": 1104,
+      "y": 763,
+      "width": 42,
+      "height": 20
+    },
+    "final_bbox": {
+      "x": 1104,
+      "y": 743,
+      "width": 42,
+      "height": 40
+    },
+    "dx": 2.0,
+    "dy": 4,
+    "score_distance": 7.0,
+    "confidence": 0.9989
+  },
+  {
+    "id": 2,
+    "composed_tag": "LAH-0002",
+    "prefix": "LAH",
+    "prefix_text": "LAH",
+    "prefix_prob": 0.9837,
+    "prefix_bbox": {
+      "x": 933,
+      "y": 741,
+      "width": 34,
+      "height": 18
+    },
+    "number": "0002",
+    "number_text": "0002",
+    "number_prob": 0.9986,
+    "number_bbox": {
+      "x": 927,
+      "y": 762,
+      "width": 42,
+      "height": 20
+    },
+    "final_bbox": {
+      "x": 927,
+      "y": 741,
+      "width": 42,
+      "height": 41
+    },
+    "dx": 2.0,
+    "dy": 3,
+    "score_distance": 6.0,
+    "confidence": 0.9911
+  },
+  {
+    "id": 3,
+    "composed_tag": "LAH-0002",
+    "prefix": "LAH",
+    "prefix_text": "LAH",
+    "prefix_prob": 0.9926,
+    "prefix_bbox": {
+      "x": 935,
+      "y": 743,
+      "width": 32,
+      "height": 16
+    },
+    "number": "0002",
+    "number_text": "0002",
+    "number_prob": 0.9965,
+    "number_bbox": {
+      "x": 927,
+      "y": 763,
+      "width": 42,
+      "height": 20
+    },
+    "final_bbox": {
+      "x": 927,
+      "y": 743,
+      "width": 42,
+      "height": 40
+    },
+    "dx": 3.0,
+    "dy": 4,
+    "score_distance": 8.5,
+    "confidence": 0.9946
+  },
+  {
+    "id": 4,
+    "composed_tag": "LG-0031",
+    "prefix": "LG",
+    "prefix_text": "LG",
+    "prefix_prob": 0.9959,
+    "prefix_bbox": {
+      "x": 649,
+      "y": 738,
+      "width": 24,
+      "height": 20
+    },
+    "number": "0031",
+    "number_text": "0031",
+    "number_prob": 0.9996,
+    "number_bbox": {
+      "x": 642,
+      "y": 759,
+      "width": 40,
+      "height": 24
+    },
+    "final_bbox": {
+      "x": 642,
+      "y": 738,
+      "width": 40,
+      "height": 45
+    },
+    "dx": 1.0,
+    "dy": 1,
+    "score_distance": 2.5,
+    "confidence": 0.9978
+  }
+]

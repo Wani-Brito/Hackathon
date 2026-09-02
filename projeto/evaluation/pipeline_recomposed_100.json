@@ -1,0 +1,257 @@
+[
+  {
+    "texto_ocr": "LAL-0034",
+    "tag": "LAL-0034",
+    "tipo": "Não cadastrado",
+    "classe": "Não cadastrado",
+    "status": "Possível TAG",
+    "confidence": 0.8727,
+    "bbox": {
+      "x": 1104,
+      "y": 742,
+      "width": 42,
+      "height": 40
+    },
+    "is_recomposed": true
+  },
+  {
+    "texto_ocr": "PSV-0010",
+    "tag": "PSV-0010",
+    "tipo": "Não cadastrado",
+    "classe": "Não cadastrado",
+    "status": "Possível TAG",
+    "confidence": 0.8925,
+    "bbox": {
+      "x": 452,
+      "y": 434,
+      "width": 42,
+      "height": 44
+    },
+    "is_recomposed": true
+  },
+  {
+    "texto_ocr": "PSV-0011",
+    "tag": "PSV-0011",
+    "tipo": "Não cadastrado",
+    "classe": "Não cadastrado",
+    "status": "Possível TAG",
+    "confidence": 0.9505,
+    "bbox": {
+      "x": 841,
+      "y": 432,
+      "width": 39,
+      "height": 45
+    },
+    "is_recomposed": true
+  },
+  {
+    "texto_ocr": "PSV-0010",
+    "tag": "PSV-0010",
+    "tipo": "Não cadastrado",
+    "classe": "Não cadastrado",
+    "status": "Possível TAG",
+    "confidence": 0.8316,
+    "bbox": {
+      "x": 454,
+      "y": 432,
+      "width": 40,
+      "height": 44
+    },
+    "is_recomposed": true
+  },
+  {
+    "texto_ocr": "LSH-0002",
+    "tag": "LSH-0002",
+    "tipo": "Não cadastrado",
+    "classe": "Não cadastrado",
+    "status": "Possível TAG",
+    "confidence": 0.9993,
+    "bbox": {
+      "x": 834,
+      "y": 738,
+      "width": 44,
+      "height": 45
+    },
+    "is_recomposed": true
+  },
+  {
+    "texto_ocr": "LSHL-0001",
+    "tag": "LSHL-0001",
+    "tipo": "Não cadastrado",
+    "classe": "Não cadastrado",
+    "status": "Possível TAG",
+    "confidence": 0.8716,
+    "bbox": {
+      "x": 740,
+      "y": 738,
+      "width": 48,
+      "height": 45
+    },
+    "is_recomposed": true
+  },
+  {
+    "texto_ocr": "LG-0031",
+    "tag": "LG-0031",
+    "tipo": "Não cadastrado",
+    "classe": "Não cadastrado",
+    "status": "Possível TAG",
+    "confidence": 0.9951,
+    "bbox": {
+      "x": 641,
+      "y": 738,
+      "width": 40,
+      "height": 45
+    },
+    "is_recomposed": true
+  },
+  {
+    "texto_ocr": "LAH-0002",
+    "tag": "LAH-0002",
+    "tipo": "Não cadastrado",
+    "classe": "Não cadastrado",
+    "status": "Possível TAG",
+    "confidence": 0.9911,
+    "bbox": {
+      "x": 927,
+      "y": 741,
+      "width": 42,
+      "height": 41
+    },
+    "is_recomposed": true
+  },
+  {
+    "texto_ocr": "LAH-0002",
+    "tag": "LAH-0002",
+    "tipo": "Não cadastrado",
+    "classe": "Não cadastrado",
+    "status": "Possível TAG",
+    "confidence": 0.9901,
+    "bbox": {
+      "x": 927,
+      "y": 740,
+      "width": 42,
+      "height": 43
+    },
+    "is_recomposed": true
+  },
+  {
+    "texto_ocr": "PSLL-00168",
+    "tag": "PSLL-00168",
+    "tipo": "Não cadastrado",
+    "classe": "Não cadastrado",
+    "status": "Possível TAG",
+    "confidence": 0.9214,
+    "bbox": {
+      "x": 1408,
+      "y": 148,
+      "width": 52,
+      "height": 48
+    },
+    "is_recomposed": true
+  },
+  {
+    "texto_ocr": "PSL-0017",
+    "tag": "PSL-0017",
+    "tipo": "Não cadastrado",
+    "classe": "Não cadastrado",
+    "status": "Possível TAG",
+    "confidence": 0.997,
+    "bbox": {
+      "x": 1113,
+      "y": 151,
+      "width": 40,
+      "height": 42
+    },
+    "is_recomposed": true
+  },
+  {
+    "texto_ocr": "PT-0014",
+    "tag": "PT-0014",
+    "tipo": "Não cadastrado",
+    "classe": "Não cadastrado",
+    "status": "Possível TAG",
+    "confidence": 0.9906,
+    "bbox": {
+      "x": 947,
+      "y": 151,
+      "width": 40,
+      "height": 42
+    },
+    "is_recomposed": true
+  },
+  {
+    "texto_ocr": "TE-0003",
+    "tag": "TE-0003",
+    "tipo": "Não cadastrado",
+    "classe": "Não cadastrado",
+    "status": "Possível TAG",
+    "confidence": 0.9796,
+    "bbox": {
+      "x": 854,
+      "y": 151,
+      "width": 42,
+      "height": 42
+    },
+    "is_recomposed": true
+  },
+  {
+    "texto_ocr": "PAL-0017",
+    "tag": "PAL-0017",
+    "tipo": "Não cadastrado",
+    "classe": "Não cadastrado",
+    "status": "Possível TAG",
+    "confidence": 0.9983,
+    "bbox": {
+      "x": 1114,
+      "y": 54,
+      "width": 38,
+      "height": 42
+    },
+    "is_recomposed": true
+  },
+  {
+    "texto_ocr": "PAL-0017",
+    "tag": "PAL-0017",
+    "tipo": "Não cadastrado",
+    "classe": "Não cadastrado",
+    "status": "Possível TAG",
+    "confidence": 0.8648,
+    "bbox": {
+      "x": 1108,
+      "y": 57,
+      "width": 45,
+      "height": 40
+    },
+    "is_recomposed": true
+  },
+  {
+    "texto_ocr": "PSLL-0016",
+    "tag": "PSLL-0016",
+    "tipo": "Não cadastrado",
+    "classe": "Não cadastrado",
+    "status": "Possível TAG",
+    "confidence": 0.9991,
+    "bbox": {
+      "x": 1567,
+      "y": 21,
+      "width": 44,
+      "height": 47
+    },
+    "is_recomposed": true
+  },
+  {
+    "texto_ocr": "PSLL-0016",
+    "tag": "PSLL-0016",
+    "tipo": "Não cadastrado",
+    "classe": "Não cadastrado",
+    "status": "Possível TAG",
+    "confidence": 0.987,
+    "bbox": {
+      "x": 1569,
+      "y": 26,
+      "width": 42,
+      "height": 41
+    },
+    "is_recomposed": true
+  }
+]

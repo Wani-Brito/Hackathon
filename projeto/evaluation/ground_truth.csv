@@ -1,0 +1,20 @@
+image,tag,tipo,classe,status
+0.jpg,FO,Fail Open,Falha de Válvula,Identificado
+0.jpg,FC,Fail Close,Falha de Válvula,Identificado
+0.jpg,FL,Fail Locked,Falha de Válvula,Identificado
+0.jpg,FL/DO,Fail Last/Drift Open,Falha de Válvula,Identificado
+0.jpg,FL/DC,Fail Last/Drift Close,Falha de Válvula,Identificado
+100.jpg,LAL-0034,Não cadastrado,Não cadastrado,Possível TAG
+100.jpg,PSV-0010,Não cadastrado,Não cadastrado,Possível TAG
+100.jpg,PSV-0011,Não cadastrado,Não cadastrado,Possível TAG
+100.jpg,LSH-0002,Não cadastrado,Não cadastrado,Possível TAG
+100.jpg,LSHL-0001,Não cadastrado,Não cadastrado,Possível TAG
+100.jpg,LG-0031,Não cadastrado,Não cadastrado,Possível TAG
+100.jpg,LAH-0002,Não cadastrado,Não cadastrado,Possível TAG
+100.jpg,PSLL-0016B,Não cadastrado,Não cadastrado,Possível TAG
+100.jpg,PSL-0017,Não cadastrado,Não cadastrado,Possível TAG
+100.jpg,PT-0014,Não cadastrado,Não cadastrado,Possível TAG
+100.jpg,TE-0003,Não cadastrado,Não cadastrado,Possível TAG
+100.jpg,PAL-0017,Não cadastrado,Não cadastrado,Possível TAG
+100.jpg,PSLL-0016,Não cadastrado,Não cadastrado,Possível TAG
+100.jpg,V-001,Não cadastrado,Não cadastrado,Possível TAG
