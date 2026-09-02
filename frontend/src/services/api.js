@@ -4,7 +4,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 export const apiService = {
   async checkHealth() {
-    const response = await axios.get(`${API_BASE_URL}/health`);
+    const response = await axios.get(`${API_BASE_URL}/health`, { timeout: 2500 });
     return response.data;
   },
 
@@ -19,6 +19,11 @@ export const apiService = {
     const response = await axios.get(`${API_BASE_URL}/download-report/${reportId}`, {
       responseType: 'blob',
     });
+    return response.data;
+  },
+
+  async getEvaluationMetrics() {
+    const response = await axios.get(`${API_BASE_URL}/evaluation-metrics`, { timeout: 2500 });
     return response.data;
   },
 

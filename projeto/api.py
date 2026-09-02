@@ -1,5 +1,5 @@
 import os
-
+import json
 import uuid
 import shutil
 import time
@@ -217,6 +217,50 @@ def gerar_relatorio_pdf(report_path, report_data):
 @app.get("/health")
 async def health_check():
     return {"status": "ok"}
+
+EVAL_SUMMARY_PATH = os.path.join(BASE_DIR, "evaluation", "results", "metrics_summary.json")
+EVAL_CM_PATH = os.path.join(BASE_DIR, "evaluation", "results", "confusion_matrix_status.csv")
+
+@app.get("/evaluation-metrics")
+async def get_evaluation_metrics():
+    if not os.path.exists(EVAL_SUMMARY_PATH):
+        raise HTTPException(
+            status_code=404,
+            detail="Métricas de avaliação não encontradas. Execute evaluate.py primeiro."
+        )
+
+    try:
+        with open(EVAL_SUMMARY_PATH, "r", encoding="utf-8") as f:
+            summary_data = json.load(f)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao ler resumo de avaliação: {e}")
+
+    confusion_matrix = []
+    if os.path.exists(EVAL_CM_PATH):
+        try:
+            df_cm = pd.read_csv(EVAL_CM_PATH)
+            first_col = df_cm.columns[0]
+            categories = [c for c in df_cm.columns[1:]]
+            for _, row in df_cm.iterrows():
+                actual = str(row[first_col])
+                row_dict = {"actual": actual}
+                for cat in categories:
+                    row_dict[cat] = int(row[cat]) if not pd.isna(row[cat]) else 0
+                confusion_matrix.append(row_dict)
+        except Exception:
+            pass
+
+    return {
+        "status": "success",
+        "evaluated_at": summary_data.get("evaluated_at"),
+        "total_images_evaluated": summary_data.get("total_images_evaluated", 0),
+        "total_ground_truth_tags": summary_data.get("total_ground_truth_tags", 0),
+        "total_detected_tags": summary_data.get("total_detected_tags", 0),
+        "global_metrics": summary_data.get("global_metrics", {}),
+        "per_image_results": summary_data.get("per_image_results", []),
+        "confusion_matrix": confusion_matrix,
+        "sample_description": "Resultados obtidos em uma amostra validada manualmente de 6 diagramas e 38 TAGs."
+    }
 
 @app.post("/process-image")
 async def process_image(file: UploadFile = File(...)):

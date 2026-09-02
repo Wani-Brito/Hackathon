@@ -4,6 +4,7 @@ import Hero from './components/Hero';
 import UploadArea from './components/UploadArea';
 import ProcessingState from './components/ProcessingState';
 import ResultsDashboard from './components/ResultsDashboard';
+import ModelEvaluationPanel from './components/ModelEvaluationPanel';
 import { apiService } from './services/api';
 import { getUniqueDetections, isValidImageFile } from './utils/formatters';
 
@@ -14,6 +15,42 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState(null);
+  const [apiOnline, setApiOnline] = useState(null);
+  const [apiChecking, setApiChecking] = useState(true);
+  const [evaluationMetrics, setEvaluationMetrics] = useState(null);
+  const [evaluationLoading, setEvaluationLoading] = useState(true);
+  const [evaluationError, setEvaluationError] = useState(null);
+
+  const checkInitialApiHealth = async () => {
+    try {
+      await apiService.checkHealth();
+      setApiOnline(true);
+    } catch {
+      setApiOnline(false);
+    } finally {
+      setApiChecking(false);
+    }
+  };
+
+  const loadEvaluationMetrics = async () => {
+    setEvaluationLoading(true);
+    try {
+      const data = await apiService.getEvaluationMetrics();
+      setEvaluationMetrics(data);
+      setEvaluationError(null);
+    } catch {
+      setEvaluationMetrics(null);
+      setEvaluationError('As métricas de avaliação não puderam ser carregadas porque a API está indisponível no momento.');
+    } finally {
+      setEvaluationLoading(false);
+    }
+  };
+
+  const handleRetryApi = () => {
+    setApiChecking(true);
+    checkInitialApiHealth();
+    loadEvaluationMetrics();
+  };
 
   const handleFileSelect = (selectedFile) => {
     if (!selectedFile) return;
@@ -52,13 +89,15 @@ function App() {
 
     try {
       const data = await apiService.processImage(file);
+      setApiOnline(true);
       if (data?.success) {
         setResult(data);
       } else {
         setError(data?.detail || 'Erro ao processar diagrama.');
       }
     } catch {
-      setError('Falha na comunicação com o backend. Verifique se a API está em execução (porta 8000).');
+      setApiOnline(false);
+      setError('A análise está temporariamente indisponível. Verifique a API e tente novamente.');
     } finally {
       setLoading(false);
     }
@@ -100,6 +139,37 @@ function App() {
     }
   }, [result]);
 
+  useEffect(() => {
+    let active = true;
+
+    async function loadInitialEvaluationMetrics() {
+      try {
+        const data = await apiService.getEvaluationMetrics();
+        if (active) {
+          setEvaluationMetrics(data);
+          setEvaluationError(null);
+        }
+      } catch {
+        if (active) {
+          setEvaluationError('Não foi possível carregar as métricas reais da avaliação.');
+        }
+      } finally {
+        if (active) {
+          setEvaluationLoading(false);
+        }
+      }
+    }
+
+    window.setTimeout(() => {
+      checkInitialApiHealth();
+      loadInitialEvaluationMetrics();
+    }, 0);
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <div className="app-shell">
       <div className="tech-grid" aria-hidden="true" />
@@ -118,6 +188,23 @@ function App() {
           </p>
         </div>
 
+        {apiOnline === false && (
+          <div className="api-offline-banner" role="status">
+            <div className="offline-copy">
+              <strong>Análise temporariamente indisponível</strong>
+              <span>O backend não respondeu agora. A navegação e o painel institucional continuam disponíveis.</span>
+            </div>
+            <button
+              type="button"
+              className="secondary-button retry-button"
+              onClick={handleRetryApi}
+              disabled={apiChecking || evaluationLoading}
+            >
+              {apiChecking ? 'Verificando...' : 'Tentar novamente'}
+            </button>
+          </div>
+        )}
+
         {!result && !loading && (
           <UploadArea
             file={file}
@@ -125,7 +212,7 @@ function App() {
             onFileSelect={handleFileSelect}
             onProcess={handleProcessImage}
             onReset={handleReset}
-            disabled={loading}
+            disabled={loading || apiOnline === false}
           />
         )}
 
@@ -147,6 +234,13 @@ function App() {
           />
         )}
       </main>
+
+      <ModelEvaluationPanel
+        metrics={evaluationMetrics}
+        loading={evaluationLoading}
+        error={evaluationError}
+        onRetry={handleRetryApi}
+      />
 
       <footer id="sobre" role="contentinfo">
         <div className="footer-content">

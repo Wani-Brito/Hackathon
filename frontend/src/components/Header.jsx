@@ -11,6 +11,7 @@ export default function Header() {
       <nav className="nav-links" aria-label="Navegação principal">
         <a href="#inicio">Início</a>
         <a href="#analise">Análise de Planta</a>
+        <a href="#avaliacao-modelo">Avaliação do Modelo</a>
       </nav>
     </header>
   );
