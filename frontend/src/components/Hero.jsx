@@ -35,7 +35,7 @@ export default function Hero() {
           </div>
           <div className="feature-pill" role="listitem">
             <ShieldCheck size={15} aria-hidden="true" />
-            <span>Catálogo ISA-5.1 Integrado</span>
+            <span>Catálogo técnico integrado</span>
           </div>
         </div>
 

@@ -22,13 +22,13 @@ class PIDImageProcessor:
         # Nível
         "LT", "LSH", "LSL", "LSHL", "LAH", "LAL", "LAHH", "LALL", "LC", "LI", "LG", "LIT", "LS", "LDT",
         # Temperatura
-        "TT", "TE", "TSH", "TSL", "TAH", "TAL", "TC", "TI", "TIT", "TW", "TD", "TDT",
+        "TT", "TE", "TY", "TSH", "TSL", "TAH", "TAL", "TC", "TI", "TIT", "TW", "TD", "TDT",
         # Vazão
-        "FT", "FE", "FC", "FI", "FIT", "FAH", "FAL", "FV", "FS", "FQ", "FQT", "FQI",
+        "FT", "FE", "FC", "FI", "FIT", "FAH", "FAL", "FV", "FS", "FQ", "FQT", "FQI", "FF",
         # Válvulas e Atuadores
         "HV", "XV", "PV", "TV", "LV", "FV", "ASV", "CV", "SDV", "BDV", "MOV", "SOV", "PRV",
         # Controladores e Intertravamentos
-        "ASC", "TIC", "PIC", "LIC", "FIC", "AIC", "SIC", "KOD", "CSO", "CSC",
+        "ASC", "TIC", "PIC", "LIC", "FIC", "AIC", "SIC", "YIC", "KOD", "CSO", "CSC", "PY",
         # Posição / Analisadores / Chaves
         "ZSH", "ZSL", "ZT", "ZC", "ZI", "AT", "AC", "AI", "ASH", "ASL", "AF", "AS",
         # Equipamentos Mecânicos
@@ -263,7 +263,7 @@ class PIDImageProcessor:
 
         # 3. Controle
         if prefix in {
-            "FIC", "TIC", "PIC", "LIC", "AIC", "SIC", "YIC", "ASC", "TC", "PC", "FC", "LC", "AC"
+            "FIC", "TIC", "PIC", "LIC", "AIC", "SIC", "YIC", "ASC", "TC", "PC", "FC", "LC", "AC", "PY"
         }:
             return "Controle"
 
@@ -271,8 +271,8 @@ class PIDImageProcessor:
         if prefix in {
             "PT", "PSL", "PSLL", "PAL", "PAH", "PI", "PIT", "PDT", "PDS", "PDSH",
             "LT", "LSH", "LSL", "LSHL", "LAH", "LAL", "LG", "LIT", "LS", "LDT",
-            "TT", "TE", "TSH", "TSL", "TAH", "TAL", "TI", "TIT", "TW", "TD", "TDT",
-            "FT", "FE", "FI", "FIT", "FAH", "FAL", "FS", "FQ", "FQT", "FQI",
+            "TT", "TE", "TY", "TSH", "TSL", "TAH", "TAL", "TI", "TIT", "TW", "TD", "TDT",
+            "FT", "FE", "FI", "FIT", "FAH", "FAL", "FS", "FQ", "FQT", "FQI", "FF",
             "ZSH", "ZSL", "ZT", "ZC", "ZI", "AT", "AI", "ASH", "ASL", "AF", "AS"
         }:
             return "Instrumentação"
@@ -358,26 +358,24 @@ class PIDImageProcessor:
             if norm in cls.TECHNICAL_PREFIXES and norm not in cls.STOPWORDS:
                 prefix_items.append(item)
 
-        used_number_indices = set()
         used_prefix_indices = set()
         recomposed_detections = []
 
         for p_idx, p in enumerate(prefix_items):
             best_n = None
             best_dist = float("inf")
-            best_n_idx = None
 
             p_box = p["bbox"]
             p_cx = p_box["x"] + p_box["width"] / 2.0
             p_cy = p_box["y"] + p_box["height"] / 2.0
 
-            for n_idx, n in enumerate(number_items):
-                if n_idx in used_number_indices:
-                    continue
-
+            for n in number_items:
                 n_box = n["bbox"]
                 n_cx = n_box["x"] + n_box["width"] / 2.0
                 n_cy = n_box["y"] + n_box["height"] / 2.0
+                candidate_tag = cls._clean_ocr_text(f"{p['norm']}-{n['norm']}")
+                catalog_bonus = 120 if candidate_tag in tag_catalog else 0
+                suffix_bonus = 40 if re.search(r"\d[A-Z]$", n["norm"]) else 0
 
                 # Cenário A: Alinhamento Vertical (ISA Bubble)
                 dy = n_box["y"] - (p_box["y"] + p_box["height"])
@@ -386,11 +384,10 @@ class PIDImageProcessor:
                 max_dx = max(p_box["width"], n_box["width"]) * 0.9
 
                 if -5 <= dy <= max_dy and dx_center <= max_dx:
-                    dist = dx_center * 1.5 + dy
+                    dist = dx_center * 1.5 + dy - catalog_bonus - suffix_bonus
                     if dist < best_dist:
                         best_dist = dist
                         best_n = n
-                        best_n_idx = n_idx
                     continue
 
                 # Cenário B: Alinhamento Horizontal (Prefixo + Número)
@@ -400,15 +397,13 @@ class PIDImageProcessor:
                 max_dy_h = max(p_box["height"], n_box["height"]) * 0.6
 
                 if -5 <= dx <= max_dx_h and dy_center <= max_dy_h:
-                    dist = dx + dy_center * 1.5
+                    dist = dx + dy_center * 1.5 - catalog_bonus - suffix_bonus
                     if dist < best_dist:
                         best_dist = dist
                         best_n = n
-                        best_n_idx = n_idx
 
             if best_n is not None:
                 used_prefix_indices.add(p_idx)
-                used_number_indices.add(best_n_idx)
 
                 composed_raw = f"{p['norm']}-{best_n['norm']}"
                 composed_tag = cls._clean_ocr_text(composed_raw)

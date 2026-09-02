@@ -101,6 +101,19 @@ def carregar_catalogo():
 CATALOGO = carregar_catalogo()
 
 
+def deduplicar_detections_por_tag(detections):
+    """Deduplica deteccoes por TAG mantendo a maior confianca, como no frontend."""
+    unicas = {}
+    for detection in detections or []:
+        tag = detection.get("tag")
+        if not tag:
+            continue
+        confidence = detection.get("confidence", 0)
+        if tag not in unicas or confidence > unicas[tag].get("confidence", 0):
+            unicas[tag] = detection
+    return list(unicas.values())
+
+
 def gerar_relatorio_pdf(report_path, report_data):
     """Gera um relatório visual de uma análise já concluída."""
     page_width, page_height = A4
@@ -136,8 +149,9 @@ def gerar_relatorio_pdf(report_path, report_data):
     y -= 10 * mm
 
     stats = report_data["stats"]
+    detections = deduplicar_detections_por_tag(report_data["detections"])
     cards = [
-        ("TAGs identificadas", str(len(report_data["detections"]))),
+        ("TAGs identificadas", str(len(detections))),
         ("Regioes analisadas", str(stats.get("regions_sent_to_ocr", 0))),
         ("Tempo de processamento", f"{stats.get('processing_time_seconds', 0)} s"),
     ]
@@ -176,7 +190,6 @@ def gerar_relatorio_pdf(report_path, report_data):
     pdf.drawString(margin, y, "TAGs detectadas")
     y -= 7 * mm
 
-    detections = report_data["detections"]
     if not detections:
         pdf.setFillColor(muted)
         pdf.setFont("Helvetica", 9)
