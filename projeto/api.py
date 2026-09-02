@@ -86,9 +86,15 @@ def carregar_catalogo():
     for _, row in df.iterrows():
         tag = str(row["TAG"]).strip().upper()
         if tag:
+            tipo = row["TIPO"]
+            classe = row["CLASSE"]
+            grupo = row.get("GRUPO") if "GRUPO" in df.columns else None
+            if not grupo or pd.isna(grupo):
+                grupo = PIDImageProcessor._infer_group(tag, "Identificado", tipo, classe)
             catalogo[tag] = {
-                "tipo": row["TIPO"],
-                "classe": row["CLASSE"],
+                "tipo": tipo,
+                "classe": classe,
+                "grupo": grupo,
             }
     return catalogo
 
@@ -176,12 +182,12 @@ def gerar_relatorio_pdf(report_path, report_data):
         pdf.setFont("Helvetica", 9)
         pdf.drawString(margin, y, "Nenhum equipamento cadastrado foi identificado nesta imagem.")
     else:
-        columns = [margin, margin + 34 * mm, margin + 88 * mm, margin + 135 * mm]
+        columns = [margin, margin + 28 * mm, margin + 64 * mm, margin + 102 * mm, margin + 144 * mm]
         pdf.setFillColor(navy)
         pdf.rect(margin, y - 6 * mm, page_width - 2 * margin, 6 * mm, fill=1, stroke=0)
         pdf.setFillColor(colors.white)
         pdf.setFont("Helvetica-Bold", 7)
-        for x, title in zip(columns, ["TAG", "TIPO", "CLASSE", "CONFIANCA"]):
+        for x, title in zip(columns, ["TAG", "TIPO", "CLASSE", "GRUPO", "CONF."]):
             pdf.drawString(x + 2 * mm, y - 4 * mm, title)
         y -= 11 * mm
 
@@ -194,12 +200,13 @@ def gerar_relatorio_pdf(report_path, report_data):
                 pdf.rect(margin, y - 5 * mm, page_width - 2 * margin, 6 * mm, fill=1, stroke=0)
             pdf.setFillColor(navy)
             pdf.setFont("Helvetica-Bold", 8)
-            pdf.drawString(columns[0] + 2 * mm, y - 3.7 * mm, str(detection.get("tag", "-"))[:17])
+            pdf.drawString(columns[0] + 2 * mm, y - 3.7 * mm, str(detection.get("tag", "-"))[:15])
             pdf.setFont("Helvetica", 7.5)
-            pdf.drawString(columns[1] + 2 * mm, y - 3.7 * mm, str(detection.get("tipo", "-"))[:28])
-            pdf.drawString(columns[2] + 2 * mm, y - 3.7 * mm, str(detection.get("classe", "-"))[:24])
+            pdf.drawString(columns[1] + 2 * mm, y - 3.7 * mm, str(detection.get("tipo", "-"))[:20])
+            pdf.drawString(columns[2] + 2 * mm, y - 3.7 * mm, str(detection.get("classe", "-"))[:20])
+            pdf.drawString(columns[3] + 2 * mm, y - 3.7 * mm, str(detection.get("grupo", "-"))[:22])
             confidence = float(detection.get("confidence", 0)) * 100
-            pdf.drawString(columns[3] + 2 * mm, y - 3.7 * mm, f"{confidence:.0f}%")
+            pdf.drawString(columns[4] + 2 * mm, y - 3.7 * mm, f"{confidence:.0f}%")
             y -= 6 * mm
 
     pdf.setFillColor(muted)

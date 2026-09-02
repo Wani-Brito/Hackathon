@@ -7,7 +7,7 @@ export default function DistributionChart({ title, data = [], colorMap = {}, def
   if (!data.length || total === 0) return null;
 
   return (
-    <div className="dist-chart" role="region" aria-label={`Gr\u00e1fico: ${title}`}>
+    <div className="dist-chart" role="region" aria-label={`Gráfico: ${title}`}>
       <p className="dist-chart-title">{title}</p>
       <ul className="dist-chart-list" role="list">
         {data.map(({ label, value }, idx) => {

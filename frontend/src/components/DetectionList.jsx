@@ -13,7 +13,8 @@ export default function DetectionList({ detections = [] }) {
         !term ||
         (item.tag && item.tag.toLowerCase().includes(term)) ||
         (item.tipo && item.tipo.toLowerCase().includes(term)) ||
-        (item.classe && item.classe.toLowerCase().includes(term));
+        (item.classe && item.classe.toLowerCase().includes(term)) ||
+        (item.grupo && item.grupo.toLowerCase().includes(term));
 
       const matchesStatus =
         statusFilter === 'ALL' || item.status === statusFilter;
@@ -38,7 +39,7 @@ export default function DetectionList({ detections = [] }) {
           <Search size={15} className="search-icon" aria-hidden="true" />
           <input
             type="text"
-            placeholder="Filtrar por TAG, tipo ou classe..."
+            placeholder="Filtrar por TAG, tipo, classe ou grupo..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="search-input"
@@ -91,6 +92,7 @@ export default function DetectionList({ detections = [] }) {
               <th scope="col">Status</th>
               <th scope="col">Tipo</th>
               <th scope="col">Classe</th>
+              <th scope="col">Grupo</th>
               <th scope="col" className="text-right">Confiança</th>
             </tr>
           </thead>
@@ -119,6 +121,9 @@ export default function DetectionList({ detections = [] }) {
                     </td>
                     <td>{d.tipo}</td>
                     <td>{d.classe}</td>
+                    <td>
+                      <span className="group-badge">{d.grupo || 'Não cadastrado'}</span>
+                    </td>
                     <td className="text-right">
                       <div className="confidence-cell">
                         <span className="confidence-value font-mono">{formatConfidence(d.confidence)}</span>
@@ -135,7 +140,7 @@ export default function DetectionList({ detections = [] }) {
               })
             ) : (
               <tr>
-                <td colSpan="5" className="empty-table-cell">
+                <td colSpan="6" className="empty-table-cell">
                   {detections.length === 0
                     ? 'Nenhum equipamento cadastrado foi identificado nesta imagem.'
                     : 'Nenhuma TAG corresponde aos critérios do filtro ou busca.'}
@@ -179,6 +184,10 @@ export default function DetectionList({ detections = [] }) {
                   <div className="mobile-detail-row">
                     <span className="detail-label">Classe:</span>
                     <span className="detail-val">{d.classe}</span>
+                  </div>
+                  <div className="mobile-detail-row">
+                    <span className="detail-label">Grupo:</span>
+                    <span className="detail-val">{d.grupo || 'Não cadastrado'}</span>
                   </div>
                 </div>
 

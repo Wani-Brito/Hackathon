@@ -14,7 +14,7 @@ export default function ResultsSummary({ uniqueDetections, stats }) {
       (d) => d.status === 'Identificado'
     ).length;
     const possible = uniqueDetections.filter(
-      (d) => d.status === 'Possivel TAG' || d.status === 'Poss\u00edvel TAG'
+      (d) => d.status === 'Possível TAG' || d.status === 'Possivel TAG'
     ).length;
     const sum = uniqueDetections.reduce((acc, d) => acc + (d.confidence || 0), 0);
 
@@ -23,16 +23,16 @@ export default function ResultsSummary({ uniqueDetections, stats }) {
 
   const confPct = Math.round(metrics.avgConf * 100);
   const confLevel = confPct >= 90 ? 'high' : confPct >= 70 ? 'medium' : 'low';
-  const confLabel = { high: 'Alta', medium: 'M\u00e9dia', low: 'Baixa' }[confLevel];
+  const confLabel = { high: 'Alta', medium: 'Média', low: 'Baixa' }[confLevel];
 
   return (
-    <div className="summary-grid" role="region" aria-label="Resumo Executivo da An\u00e1lise">
+    <div className="summary-grid" role="region" aria-label="Resumo Executivo da Análise">
 
       <div className="summary-card animate-fade-in-up" style={{ animationDelay: '0.04s' }}>
         <div className="summary-icon-wrap"><Tag size={18} aria-hidden="true" /></div>
         <div className="summary-data">
           <strong>{metrics.total}</strong>
-          <span>TAGs \u00fanicas</span>
+          <span>TAGs únicas</span>
         </div>
       </div>
 
@@ -48,7 +48,7 @@ export default function ResultsSummary({ uniqueDetections, stats }) {
         <div className="summary-icon-wrap yellow"><AlertTriangle size={18} aria-hidden="true" /></div>
         <div className="summary-data">
           <strong>{metrics.possible}</strong>
-          <span>Poss\u00edveis TAGs</span>
+          <span>Possíveis TAGs</span>
         </div>
       </div>
 
@@ -56,7 +56,7 @@ export default function ResultsSummary({ uniqueDetections, stats }) {
         <div className="summary-icon-wrap"><Eye size={18} aria-hidden="true" /></div>
         <div className="summary-data">
           <strong>{stats?.regions_sent_to_ocr ?? 0}</strong>
-          <span>Regi\u00f5es analisadas</span>
+          <span>Regiões analisadas</span>
         </div>
       </div>
 
@@ -64,7 +64,7 @@ export default function ResultsSummary({ uniqueDetections, stats }) {
         <div className="summary-icon-wrap"><Clock size={18} aria-hidden="true" /></div>
         <div className="summary-data">
           <strong>{stats?.processing_time_seconds ?? 0}s</strong>
-          <span>Tempo de execu\u00e7\u00e3o</span>
+          <span>Tempo de execução</span>
         </div>
       </div>
 
@@ -75,7 +75,7 @@ export default function ResultsSummary({ uniqueDetections, stats }) {
         <div className="summary-data">
           <strong>{confPct}%</strong>
           <span>
-            Confian\u00e7a OCR m\u00e9dia{' '}
+            Confiança OCR média{' '}
             <em className={`conf-badge conf-badge--${confLevel}`}>{confLabel}</em>
           </span>
         </div>

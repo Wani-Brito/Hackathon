@@ -15,37 +15,43 @@ function toSorted(map, top = TOP) {
  * status, tipo, classe e confidence.
  */
 export default function DataVizSection({ uniqueDetections }) {
-  const { statusDist, classDist, typeDist, confDist } = useMemo(() => {
+  const { statusDist, groupDist, classDist, typeDist, confDist } = useMemo(() => {
     if (!uniqueDetections.length)
-      return { statusDist: [], classDist: [], typeDist: [], confDist: [] };
+      return { statusDist: [], groupDist: [], classDist: [], typeDist: [], confDist: [] };
 
     const statusMap = {};
+    const groupMap = {};
     const classMap = {};
     const typeMap = {};
-    const confBuckets = { Alta: 0, 'M\u00e9dia': 0, Baixa: 0 };
+    const confBuckets = { Alta: 0, Média: 0, Baixa: 0 };
 
     uniqueDetections.forEach((d) => {
       // status
       const sk = d.status || 'Desconhecido';
       statusMap[sk] = (statusMap[sk] || 0) + 1;
 
+      // grupo
+      const gk = d.grupo || 'Não cadastrado';
+      groupMap[gk] = (groupMap[gk] || 0) + 1;
+
       // classe
-      const ck = d.classe || 'N\u00e3o cadastrado';
+      const ck = d.classe || 'Não cadastrado';
       classMap[ck] = (classMap[ck] || 0) + 1;
 
       // tipo
-      const tk = d.tipo || 'N\u00e3o cadastrado';
+      const tk = d.tipo || 'Não cadastrado';
       typeMap[tk] = (typeMap[tk] || 0) + 1;
 
       // confianca
       const pct = (d.confidence || 0) * 100;
       if (pct >= 90) confBuckets['Alta']++;
-      else if (pct >= 70) confBuckets['M\u00e9dia']++;
+      else if (pct >= 70) confBuckets['Média']++;
       else confBuckets['Baixa']++;
     });
 
     return {
       statusDist: toSorted(statusMap),
+      groupDist: toSorted(groupMap),
       classDist: toSorted(classMap),
       typeDist: toSorted(typeMap),
       confDist: Object.entries(confBuckets)
@@ -59,27 +65,39 @@ export default function DataVizSection({ uniqueDetections }) {
   return (
     <section
       className="dataviz-section animate-fade-in-up"
-      aria-label="Visualiza\u00e7\u00f5es dos Resultados"
+      aria-label="Visualizações dos Resultados"
       style={{ animationDelay: '0.06s' }}
     >
       <div className="dataviz-section-header">
         <div className="eyebrow">
           <span className="eyebrow-line" />
-          <span>An\u00e1lise Estat\u00edstica</span>
+          <span>Análise Estatística</span>
         </div>
-        <h3>Distribui\u00e7\u00e3o das Detec\u00e7\u00f5es</h3>
+        <h3>Distribuição das Detecções</h3>
       </div>
 
       <div className="dataviz-grid">
         <DistributionChart
-          title="Por Status de Reconhecimento"
-          data={statusDist}
-          colorMap={{ Identificado: '#38ef7d', 'Poss\u00edvel TAG': '#ffd077', 'Possivel TAG': '#ffd077' }}
+          title="Por Grupo de Aplicação"
+          data={groupDist}
+          colorMap={{
+            'Instrumentação': '#38ef7d',
+            'Válvulas / Atuadores': '#5d8cae',
+            'Controle': '#ffd077',
+            'Segurança / Proteção': '#ff6166',
+            'Equipamentos': '#a855f7',
+            'Não cadastrado': '#8fa0b3',
+          }}
         />
         <DistributionChart
-          title="Por N\u00edvel de Confian\u00e7a OCR"
+          title="Por Status de Reconhecimento"
+          data={statusDist}
+          colorMap={{ Identificado: '#38ef7d', 'Possível TAG': '#ffd077', 'Possivel TAG': '#ffd077' }}
+        />
+        <DistributionChart
+          title="Por Nível de Confiança OCR"
           data={confDist}
-          colorMap={{ Alta: '#38ef7d', 'M\u00e9dia': '#ffd077', Baixa: '#ff6166' }}
+          colorMap={{ Alta: '#38ef7d', Média: '#ffd077', Baixa: '#ff6166' }}
         />
         <DistributionChart
           title="Por Classe do Equipamento"

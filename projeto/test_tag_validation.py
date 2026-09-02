@@ -101,6 +101,25 @@ class TestTagValidation(unittest.TestCase):
         self.assertIn("PT-0004", tags_found, "Esperava PT-0004 recomposto")
         self.assertIn("PSLL-0016B", tags_found, "Esperava PSLL-0016B corrigido e recomposto")
 
+    def test_grupo_inference(self):
+        """Valida que cada grupo funcional é inferido corretamente conforme regras técnicas."""
+        # Catálogo
+        self.assertEqual(PIDImageProcessor._infer_group("M210", "Identificado", "Motor", "Equipamento"), "Equipamentos")
+        self.assertEqual(PIDImageProcessor._infer_group("LT210", "Identificado", "Sensor Nível", "Instrumento"), "Instrumentação")
+        self.assertEqual(PIDImageProcessor._infer_group("FV210", "Identificado", "Válvula", "Instrumento"), "Válvulas / Atuadores")
+        self.assertEqual(PIDImageProcessor._infer_group("FO", "Identificado", "Fail Open", "Falha de Válvula"), "Válvulas / Atuadores")
+
+        # Possível TAG
+        self.assertEqual(PIDImageProcessor._infer_group("PSV-0010", "Possível TAG"), "Segurança / Proteção")
+        self.assertEqual(PIDImageProcessor._infer_group("KOD", "Possível TAG"), "Segurança / Proteção")
+        self.assertEqual(PIDImageProcessor._infer_group("FV-11", "Possível TAG"), "Válvulas / Atuadores")
+        self.assertEqual(PIDImageProcessor._infer_group("ASV", "Possível TAG"), "Válvulas / Atuadores")
+        self.assertEqual(PIDImageProcessor._infer_group("FIC-501", "Possível TAG"), "Controle")
+        self.assertEqual(PIDImageProcessor._infer_group("TC", "Possível TAG"), "Controle")
+        self.assertEqual(PIDImageProcessor._infer_group("PT-0014", "Possível TAG"), "Instrumentação")
+        self.assertEqual(PIDImageProcessor._infer_group("LSH-0002", "Possível TAG"), "Instrumentação")
+        self.assertEqual(PIDImageProcessor._infer_group("V-001", "Possível TAG"), "Equipamentos")
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

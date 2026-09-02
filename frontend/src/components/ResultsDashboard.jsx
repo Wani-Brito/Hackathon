@@ -18,16 +18,16 @@ export default function ResultsDashboard({
     <div
       className="results-panel animate-fade-in-up"
       role="region"
-      aria-label="Painel de Resultados da An\u00e1lise"
+      aria-label="Painel de Resultados da Análise"
     >
       {/* Cabecalho com acoes */}
       <div className="results-header">
         <div className="results-title-group">
           <div className="results-status-badge">
             <CheckCircle size={14} aria-hidden="true" />
-            <span>AN\u00c1LISE CONCLU\u00cdDA</span>
+            <span>ANÁLISE CONCLUÍDA</span>
           </div>
-          <h2>Resultados da Planta T\u00e9cnica</h2>
+          <h2>Resultados da Planta Técnica</h2>
           <p className="results-subtitle">
             Arquivo analisado:{' '}
             <strong className="file-highlight">{result.original_image}</strong>
@@ -41,7 +41,7 @@ export default function ResultsDashboard({
             onClick={onReset}
           >
             <RefreshCcw size={15} aria-hidden="true" />
-            <span>Nova An\u00e1lise</span>
+            <span>Nova Análise</span>
           </button>
 
           <button
@@ -51,7 +51,7 @@ export default function ResultsDashboard({
             disabled={downloading}
           >
             <FileText size={15} aria-hidden="true" />
-            <span>{downloading ? 'Gerando Relat\u00f3rio...' : 'Baixar Relat\u00f3rio PDF'}</span>
+            <span>{downloading ? 'Gerando Relatório...' : 'Baixar Relatório PDF'}</span>
             <Download size={14} className="download-icon" aria-hidden="true" />
           </button>
         </div>

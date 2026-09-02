@@ -230,6 +230,59 @@ class PIDImageProcessor:
 
         return True
 
+    @classmethod
+    def _infer_group(cls, tag, status, tipo=None, classe=None):
+        tag_norm = cls._normalize_tag(tag)
+
+        if status == "Identificado":
+            if classe == "Equipamento" or tipo == "Motor":
+                return "Equipamentos"
+            if classe == "Falha de Válvula" or tipo == "Válvula":
+                return "Válvulas / Atuadores"
+            if classe == "Instrumento":
+                return "Instrumentação"
+            return "Instrumentação"
+
+        m = re.match(r"^([A-Z]{1,4})", tag_norm)
+        if not m:
+            return "Não cadastrado"
+        prefix = m.group(1)
+
+        # 1. Segurança / Proteção
+        if prefix in {
+            "PSV", "PSE", "SDV", "BDV", "PRV", "KOD", "CSO", "CSC", "PAHH", "LAHH", "LALL"
+        }:
+            return "Segurança / Proteção"
+
+        # 2. Válvulas / Atuadores
+        if prefix in {
+            "FV", "HV", "XV", "PV", "TV", "LV", "CV", "MOV", "SOV", "ASV",
+            "FO", "FC", "FL"
+        }:
+            return "Válvulas / Atuadores"
+
+        # 3. Controle
+        if prefix in {
+            "FIC", "TIC", "PIC", "LIC", "AIC", "SIC", "YIC", "ASC", "TC", "PC", "FC", "LC", "AC"
+        }:
+            return "Controle"
+
+        # 4. Instrumentação
+        if prefix in {
+            "PT", "PSL", "PSLL", "PAL", "PAH", "PI", "PIT", "PDT", "PDS", "PDSH",
+            "LT", "LSH", "LSL", "LSHL", "LAH", "LAL", "LG", "LIT", "LS", "LDT",
+            "TT", "TE", "TSH", "TSL", "TAH", "TAL", "TI", "TIT", "TW", "TD", "TDT",
+            "FT", "FE", "FI", "FIT", "FAH", "FAL", "FS", "FQ", "FQT", "FQI",
+            "ZSH", "ZSL", "ZT", "ZC", "ZI", "AT", "AI", "ASH", "ASL", "AF", "AS"
+        }:
+            return "Instrumentação"
+
+        # 5. Equipamentos
+        if prefix in {"V", "P", "E", "T", "C", "K", "M", "TK", "B", "R", "D", "S"}:
+            return "Equipamentos"
+
+        return "Não cadastrado"
+
     def _build_detection(self, text, confidence, bbox, is_recomposed=False):
         texto_ocr = self._clean_ocr_text(text)
         known_tag = self._extract_known_tag(texto_ocr)
@@ -237,11 +290,15 @@ class PIDImageProcessor:
         # 1. Catálogo exato -> Identificado
         if known_tag:
             reference = self.tag_catalog[known_tag]
+            tipo = reference.get("tipo", "Não cadastrado")
+            classe = reference.get("classe", "Não cadastrado")
+            grupo = reference.get("grupo") or self._infer_group(known_tag, "Identificado", tipo, classe)
             return {
                 "texto_ocr": texto_ocr,
                 "tag": known_tag,
-                "tipo": reference["tipo"],
-                "classe": reference["classe"],
+                "tipo": tipo,
+                "classe": classe,
+                "grupo": grupo,
                 "status": "Identificado",
                 "confidence": round(float(confidence), 4),
                 "bbox": bbox,
@@ -251,11 +308,13 @@ class PIDImageProcessor:
         # 2. Fora do catálogo mas sintaticamente válida -> Possível TAG
         possible_tag = self._normalize_tag(texto_ocr)
         if self._is_possible_technical_tag(texto_ocr):
+            grupo = self._infer_group(possible_tag, "Possível TAG")
             return {
                 "texto_ocr": texto_ocr,
                 "tag": possible_tag,
                 "tipo": "Não cadastrado",
                 "classe": "Não cadastrado",
+                "grupo": grupo,
                 "status": "Possível TAG",
                 "confidence": round(float(confidence), 4),
                 "bbox": bbox,
